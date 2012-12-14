@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,40 @@ public class SshTargetSelectionPanel extends JPanel {
 	public SshTargetSelectionPanel() {
 		setBorder(border);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+		for ( final String site : NesiSetupWizard.SITES ) {
+			
+//			if ( ! NesiSetupWizard.SITES.contains(site.toLowerCase()) ) {
+//				myLogger.debug("Not offering "+site+" because it is not in the set of allowed sites.");
+//				continue;
+//			}
+			final String tempsite = StringUtils.capitalize(site);
+			
+			final JCheckBox temp = new JCheckBox(tempsite);
+			temp.addItemListener(new ItemListener() {
+				
+				@Override
+				public void itemStateChanged(ItemEvent arg0) {
+					
+					if ( arg0.getStateChange() == ItemEvent.DESELECTED ) {
+						selectedSites.remove(site);
+					} else {
+						selectedSites.add(site);
+					}
+					
+				}
+			});
+			
+//			if (dn.toLowerCase().contains(site.toLowerCase())) {
+//				temp.setSelected(true);
+//				selectedSites.add(site);
+//			}
+
+			add(temp);
+				
+		}
+
+	
 	}
 	
 	public void lockUI(final boolean lock) {
@@ -62,37 +97,6 @@ public class SshTargetSelectionPanel extends JPanel {
 		String dn = si.getDN();
 		uem = GrisuRegistryManager.getDefault(si).getUserEnvironmentManager();
 		
-		for ( final String site : uem.getAllAvailableSites() ) {
-			
-			if ( ! NesiSetupWizard.SITES.contains(site.toLowerCase()) ) {
-				myLogger.debug("Not offering "+site+" because it is not in the set of allowed sites.");
-				continue;
-			}
-			
-			final JCheckBox temp = new JCheckBox(site);
-			temp.addItemListener(new ItemListener() {
-				
-				@Override
-				public void itemStateChanged(ItemEvent arg0) {
-					
-					if ( arg0.getStateChange() == ItemEvent.DESELECTED ) {
-						selectedSites.remove(site);
-					} else {
-						selectedSites.add(site);
-					}
-					
-				}
-			});
-			
-			if (dn.toLowerCase().contains(site.toLowerCase())) {
-				temp.setSelected(true);
-				selectedSites.add(site);
-			}
-			SwingUtilities.invokeLater(new Thread() {public void run() {
-				add(temp);
-				
-			}});
-		}
 		
 	}
 

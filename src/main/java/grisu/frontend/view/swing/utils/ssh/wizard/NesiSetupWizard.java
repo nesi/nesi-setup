@@ -4,6 +4,7 @@ import grisu.control.ServiceInterface;
 import grisu.control.exceptions.RemoteFileSystemException;
 import grisu.frontend.control.clientexceptions.FileTransactionException;
 import grisu.frontend.control.login.LoginManager;
+import grisu.jcommons.view.html.VelocityUtils;
 import grisu.model.FileManager;
 import grisu.model.GrisuRegistryManager;
 import grisu.model.MountPoint;
@@ -40,13 +41,15 @@ import org.ciscavate.cjwizard.WizardPage;
 import org.ciscavate.cjwizard.WizardSettings;
 import org.ciscavate.cjwizard.pagetemplates.PageTemplate;
 import org.ciscavate.cjwizard.pagetemplates.TitledPageTemplate;
-import org.python.modules.synchronize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.kenai.jaffl.annotations.Direct;
 
 public class NesiSetupWizard extends JFrame implements WizardListener,
 		PropertyChangeListener {
@@ -55,7 +58,10 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			"auckland", "canterbury");
 
 	public static final ImmutableSet<String> HOSTS = ImmutableSet
-			.of("pan.nesi.org.nz");
+			.of("pan.nesi.org.nz", "gram5p7.canterbury.ac.nz");
+	
+	public static final ImmutableMap<String, String> BOOKMARK_NAMES = ImmutableMap.of("gsiftp://pan.nesi.org.nz/~/", "Pan", "gsiftp://gram5p7.canterbury.ac.nz/~/", "Power 7 (SUSE)"); 
+	public static final ImmutableMap<String, String> BOOKMARK_HOSTS = ImmutableMap.of("gsiftp://pan.nesi.org.nz/~/", "login.uoa.nesi.org.nz", "gsiftp://gram5p7.canterbury.ac.nz/~/", "beatrice.canterbury.ac.nz"); 
 
 	public static final Logger myLogger = LoggerFactory
 			.getLogger(NesiSetupWizard.class);
@@ -163,7 +169,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			String publicKey = sshkey.getCertPath();
 
 			String pubContent = FileUtils.readFileToString(new File(publicKey));
-			progressPage.addMessage("\n\t" + pubContent + "\n");
+			// progressPage.addMessage("\n\t" + pubContent + "\n");
 
 			for (String site : sites) {
 				copyToSite(site, progressPage);
@@ -383,8 +389,55 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			forceCreateNewKey = sshcopyPage.isForceCreateNewKey();
 
 		}
+		if (oldPage instanceof SshConfigSetupPage) {
+			final SshConfigSetupPage page = (SshConfigSetupPage) oldPage;
+
+			Set<SshBookmark> bookmarks = Sets.newTreeSet();
+			for (String site : sites) {
+				for ( Directory d : getDirectoriesForSite(site)) {
+					System.out.println("DIR: "+d.toString());
+					SshBookmark b = null;
+					try {
+						b = getBookmark(d);
+					} catch (Exception e) {
+						myLogger.error("Could not get bookmark: "+d.toString());
+						continue;
+					}
+					if ( b != null ) {
+						bookmarks.add(getBookmark(d));
+					}
+				}
+			}
+
+			if (page.createMobaXTermConfig()) {
+				createMobaXTermConfig(bookmarks);
+			}
+			if (page.createSshConfig()) {
+				createSshConfig(bookmarks);
+			}
+		}
+	}
+	
+	public SshBookmark getBookmark(Directory d) {
+		
+		SshBookmark b = new SshBookmark();
+		b.setUsername(getUsernameForUrl(d.toUrl()));
+		String host = BOOKMARK_HOSTS.get(d.toUrl());
+		String name = BOOKMARK_NAMES.get(d.toUrl());
+		if ( StringUtils.isBlank(host)) {
+			myLogger.debug("Can't find host for: "+d.toUrl());
+			return null;
+		}
+		if ( StringUtils.isBlank(name)) {
+			myLogger.debug("Can't find name for: "+d.toUrl());
+			return null;
+		}
+		b.setHost(host);
+		b.setName(name);
+		return b;
 	}
 
+	
 	@Override
 	public void onPageChanged(final WizardPage newPage, List<WizardPage> path) {
 
@@ -425,6 +478,19 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			t.setName("SshCopyThread");
 			t.start();
 		}
+
+	}
+
+	private void createSshConfig(Set<SshBookmark> bookmarks) {
+
+	}
+
+	private void createMobaXTermConfig(Set<SshBookmark> bookmarks) {
+
+
+			MobaXtermIniCreator c = new MobaXtermIniCreator(bookmarks);
+
+			c.create();
 
 	}
 

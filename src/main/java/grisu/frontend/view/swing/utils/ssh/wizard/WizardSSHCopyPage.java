@@ -34,7 +34,7 @@ public class WizardSSHCopyPage extends WizardPage {
 	private AdvancedSSHOptionsPanel advancedSSHOptionsPanel;
 	private JCheckBox chckbxSkipThisStep;
 	private SshTargetSelectionPanel sshTargetSelectionPanel;
-	
+		
 	public WizardSSHCopyPage(String title, String description) {
 		super(title, description);
 		setLayout(new FormLayout(new ColumnSpec[] {
@@ -131,13 +131,13 @@ public class WizardSSHCopyPage extends WizardPage {
 				public void itemStateChanged(ItemEvent arg0) {
 					
 					if (arg0.getStateChange() == ItemEvent.DESELECTED) {
-						setNextEnabled(true);
-						setFinishEnabled(false);
+//						setNextEnabled(true);
+//						setFinishEnabled(false);
 						getAdvancedSSHOptionsPanel().lockUI(false);
 						getSshTargetSelectionPanel().lockUI(false);
 					} else {
-						setNextEnabled(false);
-						setFinishEnabled(true);
+//						setNextEnabled(false);
+//						setFinishEnabled(true);
 						getAdvancedSSHOptionsPanel().lockUI(true);
 						getSshTargetSelectionPanel().lockUI(true);
 					}
