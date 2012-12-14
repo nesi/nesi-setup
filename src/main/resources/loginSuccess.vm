@@ -1,0 +1,9 @@
+<html>
+
+<h4>Login successful</h4>
+
+<div>Your identity token:</dev>
+
+<div>${dn}</div>
+
+</html>

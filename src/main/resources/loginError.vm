@@ -1,0 +1,9 @@
+<html>
+
+<h4>Login error</h4>
+
+<div>${error_msg}</dev>
+
+<div>Please try again...</div>
+
+</html>

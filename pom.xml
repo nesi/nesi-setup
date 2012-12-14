@@ -1,0 +1,71 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+
+
+
+	<parent>
+		<groupId>nz.org.nesi</groupId>
+		<artifactId>nesi</artifactId>
+		<version>0.23</version>
+	</parent>
+
+	<repositories>
+		<repository>
+			<id>releases</id>
+			<url>http://code.ceres.auckland.ac.nz/nexus/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+				<updatePolicy>always</updatePolicy>
+				<checksumPolicy>fail</checksumPolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+
+
+
+	<artifactId>nesi-setup</artifactId>
+	<version>0.1-SNAPSHOT</version>
+	<dependencies>
+		<dependency>
+			<groupId>grisu.frontend</groupId>
+			<artifactId>grisu-client</artifactId>
+			<version>${grisu.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>grith</groupId>
+			<artifactId>jgrith</artifactId>
+			<version>0.9-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15</artifactId>
+			<version>1.45</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ciscavate</groupId>
+			<artifactId>cjwizard</artifactId>
+			<version>0.22-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity</artifactId>
+			<version>1.7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity-tools</artifactId>
+			<version>2.0</version>
+		</dependency>
+	</dependencies>
+	<properties>
+		<grisu.version>0.5.11-SNAPSHOT</grisu.version>
+	</properties>
+</project>

@@ -1,0 +1,7 @@
+<html>
+
+<div>Login into: ${idp}</dev>
+
+<div>User: ${username}</div>
+
+</html>
