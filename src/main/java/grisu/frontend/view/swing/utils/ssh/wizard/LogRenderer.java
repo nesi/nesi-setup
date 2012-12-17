@@ -4,4 +4,6 @@ public interface LogRenderer {
 
 	public void addMessage(String message);
 	
+	public void clearProgressLog();
+	
 }

@@ -47,15 +47,13 @@ public class WizardSSHCopyPage extends WizardPage {
 				FormFactory.RELATED_GAP_ROWSPEC,
 				RowSpec.decode("max(47dlu;default)"),
 				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.DEFAULT_ROWSPEC,
-				FormFactory.RELATED_GAP_ROWSPEC,
 				RowSpec.decode("default:grow"),
 				FormFactory.RELATED_GAP_ROWSPEC,
 				RowSpec.decode("max(43dlu;default):grow"),}));
 		add(getScrollPane(), "2, 2, 3, 1, fill, fill");
-		add(getChckbxSkipThisStep(), "2, 4, 3, 1");
-		add(getSshTargetSelectionPanel(), "4, 6, fill, fill");
-		add(getScrollPane_1(), "4, 8, fill, fill");
+//		add(getChckbxSkipThisStep(), "2, 4, 3, 1");
+		add(getSshTargetSelectionPanel(), "4, 4, fill, fill");
+		add(getScrollPane_1(), "4, 6, fill, fill");
 
 	}
 
@@ -124,30 +122,30 @@ public class WizardSSHCopyPage extends WizardPage {
 	public GridSshKey getGridSshKey() {
 		return getAdvancedSSHOptionsPanel().getGridSshKey();
 	}
-	private JCheckBox getChckbxSkipThisStep() {
-		if (chckbxSkipThisStep == null) {
-			chckbxSkipThisStep = new JCheckBox("Skip this step");
-			chckbxSkipThisStep.addItemListener(new ItemListener() {
-				public void itemStateChanged(ItemEvent arg0) {
-					
-					if (arg0.getStateChange() == ItemEvent.DESELECTED) {
-//						setNextEnabled(true);
-//						setFinishEnabled(false);
-						getAdvancedSSHOptionsPanel().lockUI(false);
-						getSshTargetSelectionPanel().lockUI(false);
-					} else {
-//						setNextEnabled(false);
-//						setFinishEnabled(true);
-						getAdvancedSSHOptionsPanel().lockUI(true);
-						getSshTargetSelectionPanel().lockUI(true);
-					}
-					
-				}
-			});
-		}
-		return chckbxSkipThisStep;
-	}
-	
+//	private JCheckBox getChckbxSkipThisStep() {
+//		if (chckbxSkipThisStep == null) {
+//			chckbxSkipThisStep = new JCheckBox("Skip this step");
+//			chckbxSkipThisStep.addItemListener(new ItemListener() {
+//				public void itemStateChanged(ItemEvent arg0) {
+//					
+//					if (arg0.getStateChange() == ItemEvent.DESELECTED) {
+////						setNextEnabled(true);
+////						setFinishEnabled(false);
+//						getAdvancedSSHOptionsPanel().lockUI(false);
+//						getSshTargetSelectionPanel().lockUI(false);
+//					} else {
+////						setNextEnabled(false);
+////						setFinishEnabled(true);
+//						getAdvancedSSHOptionsPanel().lockUI(true);
+//						getSshTargetSelectionPanel().lockUI(true);
+//					}
+//					
+//				}
+//			});
+//		}
+//		return chckbxSkipThisStep;
+//	}
+//	
 	public Set<String> getSelectedSites() {
 		return getSshTargetSelectionPanel().getSelectedSites();
 	}
@@ -166,4 +164,8 @@ public class WizardSSHCopyPage extends WizardPage {
 	public boolean isForceCreateNewKey() {
 		return getAdvancedSSHOptionsPanel().isForceCreateNewKey();
 	}
+
+//	public boolean isSkipSshStep() {
+//		return getChckbxSkipThisStep().isSelected();
+//	}
 }

@@ -27,20 +27,26 @@ public class MobaXtermIniCreator {
 		}
 	}
 
-	public void create() {
-
+	
+	public String getMobaXtermPath() {
 		
+		return mobaXtermPath + File.separator
+				+ "MobaXterm.ini";
+	}
+	
+	public void create() {
+				
     	Map<String, Object> properties = Maps.newHashMap();
 
     	properties.put("bookmarks", bookmarks);
+    	String username = System.getProperty("user.name");
+    	properties.put("username", username);
     	
     	String iniContent = VelocityUtils.render("moba.ini", properties);
     	
     	try {
-			FileUtils.writeStringToFile(new File(mobaXtermPath + File.separator
-					+ "MobaXterm.ini"), iniContent);
-			FileUtils.writeStringToFile(new File(mobaXtermPath + File.separator
-					+ "MobaXterm.ini.auto"), iniContent);
+			FileUtils.writeStringToFile(new File(getMobaXtermPath()), iniContent);
+			FileUtils.writeStringToFile(new File(getMobaXtermPath()+".auto"), iniContent);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

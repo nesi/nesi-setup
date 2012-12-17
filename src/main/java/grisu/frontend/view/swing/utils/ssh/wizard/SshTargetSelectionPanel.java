@@ -67,6 +67,8 @@ public class SshTargetSelectionPanel extends JPanel {
 				}
 			});
 			
+			temp.setSelected(true);
+			
 //			if (dn.toLowerCase().contains(site.toLowerCase())) {
 //				temp.setSelected(true);
 //				selectedSites.add(site);

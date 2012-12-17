@@ -25,7 +25,6 @@ public class SshConfigSetupPage extends WizardPage {
 	
 	private JScrollPane scrollPane;
 	private JEditorPane editorPane;
-	private JCheckBox chckbxSkipThisStep;
 	private JCheckBox chckbxCreateConfigFor;
 	private JCheckBox chckbxNewCheckBox;
 	
@@ -49,7 +48,6 @@ public class SshConfigSetupPage extends WizardPage {
 				FormFactory.RELATED_GAP_ROWSPEC,
 				FormFactory.DEFAULT_ROWSPEC,}));
 		add(getScrollPane(), "2, 2, 3, 1, fill, fill");
-		add(getChckbxSkipThisStep(), "2, 4, 3, 1");
 		add(getMobaCheckBox(), "4, 6");
 		add(getSshConfigCheckBox(), "4, 8");
 
@@ -93,28 +91,6 @@ public class SshConfigSetupPage extends WizardPage {
 		return editorPane;
 	}
 	
-
-	private JCheckBox getChckbxSkipThisStep() {
-		if (chckbxSkipThisStep == null) {
-			chckbxSkipThisStep = new JCheckBox("Skip this step");
-			chckbxSkipThisStep.addItemListener(new ItemListener() {
-				public void itemStateChanged(ItemEvent arg0) {
-					
-					if (arg0.getStateChange() == ItemEvent.DESELECTED) {
-						setNextEnabled(true);
-						setFinishEnabled(false);
-					} else {
-						setNextEnabled(false);
-						setFinishEnabled(true);
-
-					}
-					
-				}
-			});
-		}
-		return chckbxSkipThisStep;
-	}
-	
 	public boolean createMobaXTermConfig() {
 		return getMobaCheckBox().isSelected();
 	}
@@ -133,10 +109,12 @@ public class SshConfigSetupPage extends WizardPage {
 		if (chckbxCreateConfigFor == null) {
 			chckbxCreateConfigFor = new JCheckBox("Create config for MobaXTerm (only available for Windows)");
 			
-//			String currentOs = System.getProperty("os.name").toUpperCase();
-//			if (! currentOs.contains("WINDOWS") ) {
-//				chckbxCreateConfigFor.setEnabled(false);
-//			}
+			String currentOs = System.getProperty("os.name").toUpperCase();
+			if (! currentOs.contains("WINDOWS") ) {
+				chckbxCreateConfigFor.setEnabled(false);
+			} else { 
+				chckbxCreateConfigFor.setSelected(true);
+			}
 
 		}
 		return chckbxCreateConfigFor;
@@ -144,6 +122,12 @@ public class SshConfigSetupPage extends WizardPage {
 	private JCheckBox getSshConfigCheckBox() {
 		if (chckbxNewCheckBox == null) {
 			chckbxNewCheckBox = new JCheckBox("Add entries to .ssh/config");
+			String currentOs = System.getProperty("os.name").toUpperCase();
+			if ( currentOs.contains("WINDOWS") ) {
+				chckbxNewCheckBox.setSelected(false);
+			} else { 
+				chckbxNewCheckBox.setSelected(true);
+			}
 		}
 		return chckbxNewCheckBox;
 	}

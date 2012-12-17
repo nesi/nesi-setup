@@ -20,6 +20,7 @@ import grith.jgrith.utils.GridSshKey;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -29,7 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
@@ -39,6 +42,7 @@ import org.ciscavate.cjwizard.WizardContainer;
 import org.ciscavate.cjwizard.WizardListener;
 import org.ciscavate.cjwizard.WizardPage;
 import org.ciscavate.cjwizard.WizardSettings;
+import org.ciscavate.cjwizard.pagetemplates.DefaultPageTemplate;
 import org.ciscavate.cjwizard.pagetemplates.PageTemplate;
 import org.ciscavate.cjwizard.pagetemplates.TitledPageTemplate;
 import org.slf4j.Logger;
@@ -54,11 +58,14 @@ import com.kenai.jaffl.annotations.Direct;
 public class NesiSetupWizard extends JFrame implements WizardListener,
 		PropertyChangeListener {
 
+//	public static final ImmutableSet<String> SITES = ImmutableSet.of(
+//			"auckland", "canterbury");
+//	public static final ImmutableSet<String> HOSTS = ImmutableSet
+//			.of("pan.nesi.org.nz", "gram5p7.canterbury.ac.nz");
 	public static final ImmutableSet<String> SITES = ImmutableSet.of(
-			"auckland", "canterbury");
-
+			"auckland");
 	public static final ImmutableSet<String> HOSTS = ImmutableSet
-			.of("pan.nesi.org.nz", "gram5p7.canterbury.ac.nz");
+			.of("pan.nesi.org.nz");
 	
 	public static final ImmutableMap<String, String> BOOKMARK_NAMES = ImmutableMap.of("gsiftp://pan.nesi.org.nz/~/", "Pan", "gsiftp://gram5p7.canterbury.ac.nz/~/", "Power 7 (SUSE)"); 
 	public static final ImmutableMap<String, String> BOOKMARK_HOSTS = ImmutableMap.of("gsiftp://pan.nesi.org.nz/~/", "login.uoa.nesi.org.nz", "gsiftp://gram5p7.canterbury.ac.nz/~/", "beatrice.canterbury.ac.nz"); 
@@ -111,6 +118,12 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	private final Map<String, String> sshUsernameMap = Maps.newConcurrentMap();
 
 	private List<MountPoint> mountpoints = null;
+	
+	private boolean createMobaConfig = false;
+	private boolean createSshConfig = false;
+	
+	private Set<SshBookmark> bookmarks = Sets.newTreeSet();
+
 
 	/**
 	 * Create the frame.
@@ -124,7 +137,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		setContentPane(contentPane);
 
 		pageFactory = new NesiSetupWizardPageFactory();
-		PageTemplate pt = new TitledPageTemplate();
+		PageTemplate pt = new DefaultPageTemplate();
 		wizard = new WizardContainer(pageFactory, pt);
 		wizard.setNextEnabled(true);
 		wizard.addWizardListener(this);
@@ -362,13 +375,13 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	@Override
 	public void onCanceled(List<WizardPage> path, WizardSettings settings) {
 
-		System.out.println("cancelled");
+		System.exit(0);
 	}
 
 	@Override
 	public void onFinished(List<WizardPage> path, WizardSettings settings) {
 
-		System.out.println("finished");
+		System.exit(0);
 	}
 
 	@Override
@@ -387,12 +400,12 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			sshkey = sshcopyPage.getGridSshKey();
 			sites = sshcopyPage.getSelectedSites();
 			forceCreateNewKey = sshcopyPage.isForceCreateNewKey();
+			
 
-		}
-		if (oldPage instanceof SshConfigSetupPage) {
+
+		} else if (oldPage instanceof SshConfigSetupPage) {
 			final SshConfigSetupPage page = (SshConfigSetupPage) oldPage;
 
-			Set<SshBookmark> bookmarks = Sets.newTreeSet();
 			for (String site : sites) {
 				for ( Directory d : getDirectoriesForSite(site)) {
 					System.out.println("DIR: "+d.toString());
@@ -409,13 +422,11 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 				}
 			}
 
-			if (page.createMobaXTermConfig()) {
-				createMobaXTermConfig(bookmarks);
-			}
-			if (page.createSshConfig()) {
-				createSshConfig(bookmarks);
-			}
+			createMobaConfig = page.createMobaXTermConfig();
+			createSshConfig = page.createSshConfig();
+			
 		}
+
 	}
 	
 	public SshBookmark getBookmark(Directory d) {
@@ -440,6 +451,14 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	
 	@Override
 	public void onPageChanged(final WizardPage newPage, List<WizardPage> path) {
+		
+		wizard.setFinishEnabled(false);
+		wizard.setCancelEnabled(true);
+		
+		if ( newPage instanceof LogRenderer ) {
+			((LogRenderer)newPage).clearProgressLog();
+		}
+
 
 		if (newPage instanceof WizardLoginProgressPage) {
 
@@ -452,9 +471,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			t.setName("LoginThread");
 			t.start();
 
-		}
-
-		if (newPage instanceof WizardSSHCopyProgressPage) {
+		} else if (newPage instanceof WizardSSHCopyProgressPage) {
 
 			final WizardSSHCopyProgressPage page = (WizardSSHCopyProgressPage) newPage;
 
@@ -471,26 +488,69 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 						e.printStackTrace();
 					} finally {
 						wizard.setPrevEnabled(true);
-						wizard.setFinishEnabled(true);
+//						wizard.setFinishEnabled(true);
 					}
 				}
 			};
 			t.setName("SshCopyThread");
 			t.start();
+		} else if (newPage instanceof FinishPage) {
+			wizard.setFinishEnabled(true);
+			wizard.setNextEnabled(false);
+			wizard.setCancelEnabled(false);
+
+			FinishPage page = (FinishPage)newPage;
+			if ( createMobaConfig ) {
+				createMobaXTermConfig(page);
+			}
+			if ( createSshConfig ) {
+				createSshConfig(page);
+			}
 		}
 
 	}
 
-	private void createSshConfig(Set<SshBookmark> bookmarks) {
-
+	private void createSshConfig(LogRenderer page) {
+		SshConfigCreator c = new SshConfigCreator(bookmarks);
+		try {
+			String msg = c.addEntries(sshkey.getKeyPath());
+			page.addMessage(msg);
+		} catch (IOException e) {
+			page.addMessage("Error reading writing ssh config file '"+c.getSshConfigPath()+"':\n\t"+e.getLocalizedMessage());
+		}
 	}
 
-	private void createMobaXTermConfig(Set<SshBookmark> bookmarks) {
+	private void createMobaXTermConfig(LogRenderer page) {
 
 
 			MobaXtermIniCreator c = new MobaXtermIniCreator(bookmarks);
-
-			c.create();
+			
+			if ( new File(c.getMobaXtermPath()).exists() ) {
+				
+			    JOptionPane pane = new JOptionPane(
+			            "MobaXterm config file already exists at: "+c.getMobaXtermPath()+"\nOverwrite?");
+			        Object[] options = new String[] { "Overwrite", "Cancel" };
+			        pane.setOptions(options);
+			        Point loc = this.getLocation();
+			        JDialog dialog = pane.createDialog(new JFrame(), "Write config file");
+			        dialog.setLocation(new Point((int)loc.getX(), (int)loc.getY() + 250));
+			        dialog.setVisible(true);
+			        Object obj = pane.getValue(); 
+			        int result = -1;
+			        for (int k = 0; k < options.length; k++)
+			          if (options[k].equals(obj))
+			            result = k;
+			        if ( result == 0 ) {
+						c.create();
+						page.addMessage("Config file for MobaXterm created:\n\t"+c.getMobaXtermPath()+"\n");
+			        } else {
+			        	page.addMessage("Skipped creating config file for MobaXTerm.\n");
+			        }
+				
+			} else {
+				c.create();
+				page.addMessage("Config file for MobaXterm created:\n\t"+c.getMobaXtermPath()+"\n");
+			}
 
 	}
 
