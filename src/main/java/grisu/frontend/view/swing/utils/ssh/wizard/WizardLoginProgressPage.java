@@ -22,7 +22,7 @@ import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
-public class WizardLoginProgressPage extends WizardPage {
+public class WizardLoginProgressPage extends WizardPage implements LogRenderer {
 	private JLabel lblProgress;
 	private JProgressBar progressBar;
 	private JTextField txtNotLoggedIn;
@@ -145,6 +145,12 @@ public class WizardLoginProgressPage extends WizardPage {
 			}
 		});
 
+		
+	}
+
+	@Override
+	public void clearProgressLog() {
+		getEditorPane().setText("");
 		
 	}
 

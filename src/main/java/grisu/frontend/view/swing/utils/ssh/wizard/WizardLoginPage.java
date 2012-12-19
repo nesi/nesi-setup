@@ -24,6 +24,7 @@ import com.jgoodies.forms.layout.RowSpec;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 
 public class WizardLoginPage extends WizardPage  {
 	
@@ -32,17 +33,20 @@ public class WizardLoginPage extends WizardPage  {
 	private SLCSCredPanel credPanel;
 	private JScrollPane scrollPane;
 	private JEditorPane infoPane;
+	
+	private PropertyChangeListener slcsPanelListener;
 
-	public WizardLoginPage(String title, String description) {
+	public WizardLoginPage(String title, String description, PropertyChangeListener l) {
 		super(title, description);
 		
+		this.slcsPanelListener = l;
 		setLayout(new FormLayout(new ColumnSpec[] {
 				FormFactory.RELATED_GAP_COLSPEC,
 				ColumnSpec.decode("default:grow"),
 				FormFactory.RELATED_GAP_COLSPEC,},
 			new RowSpec[] {
 				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.DEFAULT_ROWSPEC,
+				RowSpec.decode("max(80dlu;default)"),
 				FormFactory.RELATED_GAP_ROWSPEC,
 				FormFactory.DEFAULT_ROWSPEC,
 				FormFactory.RELATED_GAP_ROWSPEC,}));
@@ -53,7 +57,7 @@ public class WizardLoginPage extends WizardPage  {
 
 	private SLCSCredPanel getCredPanel() {
 		if (credPanel == null) {
-			credPanel = new SLCSCredPanel();
+			credPanel = new SLCSCredPanel(slcsPanelListener);
 		}
 		return credPanel;
 	}

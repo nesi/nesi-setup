@@ -1,5 +1,6 @@
 package grisu.frontend.view.swing.utils.ssh.wizard;
 
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Map;
 
@@ -26,9 +27,9 @@ public class NesiSetupWizardPageFactory implements PageFactory {
 	private Map<String, WizardPage> pages = Maps.newLinkedHashMap();
     
 
-    public NesiSetupWizardPageFactory() {
+    public NesiSetupWizardPageFactory(PropertyChangeListener l) {
     	
-    	WizardPage loginPage = new WizardLoginPage(LOGIN_PAGE_NAME, "Logging into institution account");
+    	WizardPage loginPage = new WizardLoginPage(LOGIN_PAGE_NAME, "Logging into institution account", l);
     	pages.put(LOGIN_PAGE_NAME, loginPage);
     	
     	WizardLoginProgressPage infoPage = new WizardLoginProgressPage(LOGIN_INFO_NAME, "Progress");

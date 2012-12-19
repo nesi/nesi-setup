@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
+import com.ctc.wstx.util.StringUtil;
 import com.google.common.collect.Maps;
 
 public class MobaXtermIniCreator {
@@ -21,7 +23,7 @@ public class MobaXtermIniCreator {
 		this.bookmarks = bookmarks;
 		
 		try {
-			new File(mobaXtermPath).mkdirs();
+			new File(getMobaXtermPath()).mkdirs();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

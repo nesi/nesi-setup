@@ -76,13 +76,15 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	public static final String NO_FILE = "NO_FILE";
 
 	public static final String GRISU_BACKEND = "bestgrid";
+	
+	private boolean nextPressedAtLeastOnce = false;
 
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
 
-		LoginManager.initEnvironment();
+		LoginManager.initGrisuClient("nesi-setup");
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -136,10 +138,10 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 
-		pageFactory = new NesiSetupWizardPageFactory();
+		pageFactory = new NesiSetupWizardPageFactory(this);
 		PageTemplate pt = new DefaultPageTemplate();
 		wizard = new WizardContainer(pageFactory, pt);
-		wizard.setNextEnabled(true);
+		wizard.setNextEnabled(false);
 		wizard.addWizardListener(this);
 		getContentPane().add(wizard);
 	}
@@ -387,10 +389,13 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	@Override
 	public void onPageAboutToChange(final WizardPage oldPage,
 			final List<WizardPage> path) throws Exception {
+		nextPressedAtLeastOnce = true;
 		// login
 		if (oldPage instanceof WizardLoginPage) {
 
-			wizard.setNextEnabled(false);
+			if ( si == null ) {
+				wizard.setNextEnabled(false);
+			}
 			WizardLoginPage page = (WizardLoginPage) oldPage;
 			credconfig = page.getCredentialConfig();
 
@@ -400,9 +405,6 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			sshkey = sshcopyPage.getGridSshKey();
 			sites = sshcopyPage.getSelectedSites();
 			forceCreateNewKey = sshcopyPage.isForceCreateNewKey();
-			
-
-
 		} else if (oldPage instanceof SshConfigSetupPage) {
 			final SshConfigSetupPage page = (SshConfigSetupPage) oldPage;
 
@@ -455,23 +457,30 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		wizard.setFinishEnabled(false);
 		wizard.setCancelEnabled(true);
 		
-		if ( newPage instanceof LogRenderer ) {
-			((LogRenderer)newPage).clearProgressLog();
-		}
-
 
 		if (newPage instanceof WizardLoginProgressPage) {
-
+			
+			if (si != null) {
+				return;
+			}
+			wizard.setPrevEnabled(false);
+			((WizardLoginProgressPage) newPage).clearProgressLog();
 			Thread t = new Thread() {
 				public void run() {
 
 					login((WizardLoginProgressPage) newPage, credconfig);
+					
+					wizard.setPrevEnabled(true);
 				}
 			};
 			t.setName("LoginThread");
 			t.start();
 
 		} else if (newPage instanceof WizardSSHCopyProgressPage) {
+
+			if ( newPage instanceof LogRenderer ) {
+				((LogRenderer)newPage).clearProgressLog();
+			}
 
 			final WizardSSHCopyProgressPage page = (WizardSSHCopyProgressPage) newPage;
 
@@ -495,6 +504,10 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			t.setName("SshCopyThread");
 			t.start();
 		} else if (newPage instanceof FinishPage) {
+			if ( newPage instanceof LogRenderer ) {
+				((LogRenderer)newPage).clearProgressLog();
+			}
+
 			wizard.setFinishEnabled(true);
 			wizard.setNextEnabled(false);
 			wizard.setCancelEnabled(false);
@@ -598,6 +611,19 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 		System.out.println("Event: " + arg0.getPropertyName());
 		System.out.println("Value: " + arg0.getNewValue());
+		
+		if ( "idpsLoaded".equals(arg0.getPropertyName() )) {
+			if ( nextPressedAtLeastOnce ) {
+				return;
+			}
+			boolean loaded = (Boolean)arg0.getNewValue();
+			if ( loaded ) {
+				wizard.setNextEnabled(true);
+			} else {
+				wizard.setNextEnabled(false);
+			}
+		}
+		
 
 	}
 
