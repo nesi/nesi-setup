@@ -10,10 +10,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.logging.Level;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -23,12 +25,19 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import org.jdesktop.swingx.JXErrorPane;
+import org.jdesktop.swingx.error.ErrorInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
 public class SshKeyPanel extends JPanel implements ActionListener {
+	
+	public static final Logger myLogger = LoggerFactory.getLogger(SshKeyPanel.class);
 	
 	private final static String NEW_KEY = "new key";
 	private final static String NEW_KEY_IDP = "new key idp";
@@ -207,6 +216,49 @@ public class SshKeyPanel extends JPanel implements ActionListener {
 	private JButton getBtnBrowse() {
 		if (btnBrowse == null) {
 			btnBrowse = new JButton("Browse");
+			btnBrowse.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					
+
+					final JFileChooser fc = new JFileChooser();
+
+					int returnVal = fc.showOpenDialog(SshKeyPanel.this);
+			        if (returnVal == JFileChooser.APPROVE_OPTION) {
+			            File file = fc.getSelectedFile();
+			            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			            fc.setFileHidingEnabled(false);
+			            
+			            if ( ! file.exists() ) {
+							final ErrorInfo info = new ErrorInfo("SSH error",
+									"Not valid ssh key.", "ssh private key does not exist: "+file.getAbsolutePath(),
+									"Error", null,
+									Level.WARNING, null);
+
+							final JXErrorPane pane = new JXErrorPane();
+							pane.setErrorInfo(info);
+
+							JXErrorPane.showDialog(SshKeyPanel.this, pane);
+			            	return;
+			            } else if ( ! new File(file.getAbsoluteFile()+CommonGridProperties.CERT_EXTENSION).exists() ) {
+							final ErrorInfo info = new ErrorInfo("SSH error",
+									"Not valid ssh key.", "ssh public key does not exist: "+file.getAbsolutePath()+CommonGridProperties.CERT_EXTENSION,
+									"Error", null,
+									Level.WARNING, null);
+
+							final JXErrorPane pane = new JXErrorPane();
+							pane.setErrorInfo(info);
+
+							JXErrorPane.showDialog(SshKeyPanel.this, pane);
+			            	return;
+			            } else {
+			            	getTextField().setText(file.getAbsolutePath());
+			            	setSshKeyType(EXISTING_KEY);
+			            }
+			        } else {
+			            return;
+			        }
+				}
+			});
 			btnBrowse.setEnabled(false);
 		}
 		return btnBrowse;
