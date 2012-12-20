@@ -567,14 +567,14 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 			MobaXtermIniCreator c = new MobaXtermIniCreator(bookmarks);
 			
-			if ( new File(c.getMobaXtermPath()).exists() ) {
+			if ( new File(c.getMobaXtermIniPath()).exists() ) {
 				
 			    JOptionPane pane = new JOptionPane(
-			            "MobaXterm config file already exists at: "+c.getMobaXtermPath()+"\nOverwrite?");
+			            "MobaXterm config file already exists at: "+c.getMobaXtermIniPath()+"\nOverwrite?");
 			        Object[] options = new String[] { "Overwrite", "Cancel" };
 			        pane.setOptions(options);
 			        Point loc = this.getLocation();
-			        JDialog dialog = pane.createDialog(new JFrame(), "Write config file");
+			        JDialog dialog = pane.createDialog(new JFrame(), "Overwrite config file");
 			        dialog.setLocation(new Point((int)loc.getX(), (int)loc.getY() + 250));
 			        dialog.setVisible(true);
 			        Object obj = pane.getValue(); 
@@ -584,14 +584,14 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			            result = k;
 			        if ( result == 0 ) {
 						c.create();
-						page.addMessage("Config file for MobaXterm created:\n\t"+c.getMobaXtermPath()+"\n");
+						page.addMessage("Config file for MobaXterm created:\n\t"+c.getMobaXtermIniPath()+"\n");
 			        } else {
 			        	page.addMessage("Skipped creating config file for MobaXTerm.\n");
 			        }
 				
 			} else {
 				c.create();
-				page.addMessage("Config file for MobaXterm created:\n\t"+c.getMobaXtermPath()+"\n");
+				page.addMessage("Config file for MobaXterm created:\n\t"+c.getMobaXtermIniPath()+"\n");
 			}
 
 	}
@@ -638,8 +638,8 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	@Override
 	public void propertyChange(PropertyChangeEvent arg0) {
 
-		System.out.println("Event: " + arg0.getPropertyName());
-		System.out.println("Value: " + arg0.getNewValue());
+//		System.out.println("Event: " + arg0.getPropertyName());
+//		System.out.println("Value: " + arg0.getNewValue());
 		
 		if ( "idpsLoaded".equals(arg0.getPropertyName() )) {
 			if ( nextPressedAtLeastOnce ) {
