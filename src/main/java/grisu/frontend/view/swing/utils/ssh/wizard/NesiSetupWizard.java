@@ -19,6 +19,7 @@ import grith.jgrith.cred.SLCSCred;
 import grith.jgrith.utils.GridSshKey;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.beans.PropertyChangeEvent;
@@ -34,6 +35,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
 import org.apache.commons.io.FileUtils;
@@ -53,6 +55,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.jgoodies.common.base.SystemUtils;
+import com.jgoodies.looks.Options;
 import com.kenai.jaffl.annotations.Direct;
 
 public class NesiSetupWizard extends JFrame implements WizardListener,
@@ -85,6 +89,31 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	public static void main(String[] args) {
 
 		LoginManager.initGrisuClient("nesi-setup");
+		
+		try {
+			myLogger.debug("Setting look and feel.");
+
+			UIManager.put(Options.USE_SYSTEM_FONTS_APP_KEY, Boolean.TRUE);
+			Options.setDefaultIconSize(new Dimension(18, 18));
+
+			String lafName = null;
+			if (SystemUtils.IS_OS_WINDOWS) {
+				lafName = Options.JGOODIES_WINDOWS_NAME;
+			} else {
+				lafName = UIManager.getSystemLookAndFeelClassName();
+			}
+
+			try {
+				myLogger.debug("Look and feel name:" + lafName);
+				UIManager.setLookAndFeel(lafName);
+			} catch (Exception e) {
+				System.err.println("Can't set look & feel:" + e);
+			}
+
+			// UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (final Exception e) {
+			myLogger.error(e.getLocalizedMessage(), e);
+		}
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
