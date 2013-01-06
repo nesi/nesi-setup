@@ -145,4 +145,9 @@
 
 	</build>
 
+	<scm>
+		<url>https://github.com/nesi/nesi-setup</url>
+		<connection>scm:git:git://github.com/nesi/nesi-setup.git</connection>
+		<developerConnection>scm:git:git@github.com:nesi/nesi-setup.git</developerConnection>
+	</scm>
 </project>
