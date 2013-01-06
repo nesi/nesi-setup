@@ -19,6 +19,7 @@ import grith.jgrith.cred.SLCSCred;
 import grith.jgrith.utils.GridSshKey;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
@@ -140,6 +141,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	private UserEnvironmentManager uem = null;
 	private GridSshKey sshkey;
 	private boolean forceCreateNewKey = false;
+	private boolean enableSshKeyAccess = false;
 
 	private Set<String> sites;
 
@@ -675,6 +677,14 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		t.setName("InitPages");
 		t.start();
 
+	}
+
+	public Set<String> getSites() {
+		return sites;
+	}
+
+	public boolean isEnableSshKeyAccess() {
+		return enableSshKeyAccess;
 	}
 
 }
