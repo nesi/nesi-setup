@@ -29,11 +29,13 @@ public class MobaXtermIniCreator {
 		}
 	}
 
+	public String getMobaXtermIniPath() {
+		return mobaXtermPath +File.separator+"MobaXterm.ini";
+	}
 	
 	public String getMobaXtermPath() {
 		
-		return mobaXtermPath + File.separator
-				+ "MobaXterm.ini";
+		return mobaXtermPath;
 	}
 	
 	public void create() {
@@ -47,8 +49,10 @@ public class MobaXtermIniCreator {
     	String iniContent = VelocityUtils.render("moba.ini", properties);
     	
     	try {
-			FileUtils.writeStringToFile(new File(getMobaXtermPath()), iniContent);
-			FileUtils.writeStringToFile(new File(getMobaXtermPath()+".auto"), iniContent);
+    		File iniFile = new File(getMobaXtermIniPath());
+			FileUtils.writeStringToFile(iniFile, iniContent);
+//			File iniMarker = new File(getMobaXtermPath()+File.separator+"MobaXterm.ini.created");
+//			FileUtils.writeStringToFile(iniFile, iniContent);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
