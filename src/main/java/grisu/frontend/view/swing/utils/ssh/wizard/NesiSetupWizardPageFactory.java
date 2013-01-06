@@ -25,11 +25,12 @@ public class NesiSetupWizardPageFactory implements PageFactory {
 	public static final String FINISH_NAME = "Finished";
     
 	private Map<String, WizardPage> pages = Maps.newLinkedHashMap();
-    
+    private final NesiSetupWizard wizard;
 
-    public NesiSetupWizardPageFactory(PropertyChangeListener l) {
+    public NesiSetupWizardPageFactory(NesiSetupWizard w) {
+    	this.wizard = w;
     	
-    	WizardPage loginPage = new WizardLoginPage(LOGIN_PAGE_NAME, "Logging into institution account", l);
+    	WizardPage loginPage = new WizardLoginPage(LOGIN_PAGE_NAME, "Logging into institution account", w);
     	pages.put(LOGIN_PAGE_NAME, loginPage);
     	
     	WizardLoginProgressPage infoPage = new WizardLoginProgressPage(LOGIN_INFO_NAME, "Progress");
@@ -62,7 +63,20 @@ public class NesiSetupWizardPageFactory implements PageFactory {
 	@Override
 	public WizardPage createPage(List<WizardPage> path, WizardSettings settings) {
 		
-		return pages.get(getTitleForIndex(path.size()));
+		int index = path.size();
+		
+		String title = getTitleForIndex(index);
+		
+		if ( SSH_COPY_PROGRESS_NAME.equals(title) ) {
+			if ( ! wizard.isEnableSshKeyAccess() || wizard.getSites().size() == 0 ) {
+				index = index+1;
+			}
+			if ( wizard.getSites() == null || wizard.getSites().size() == 0 ) {
+				index = index+1;
+			}
+		}
+		
+		return pages.get(getTitleForIndex(index));
 	}
 
 
