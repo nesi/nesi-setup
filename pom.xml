@@ -47,7 +47,7 @@
 		<dependency>
 			<groupId>org.ciscavate</groupId>
 			<artifactId>cjwizard</artifactId>
-			<version>0.22-SNAPSHOT</version>
+			<version>nesi-0.22</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.velocity</groupId>

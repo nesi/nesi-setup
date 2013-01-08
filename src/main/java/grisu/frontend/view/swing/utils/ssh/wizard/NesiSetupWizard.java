@@ -320,11 +320,9 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			File authFile = sshAuthFilesMap.get(baseUrl);
 			if (authFile == null) {
 				try {
-					System.out.println("URL: " + baseUrl);
 					authFile = fm
 							.downloadFile(baseUrl + ".ssh/authorized_keys");
 					sshAuthFilesMap.put(baseUrl, authFile);
-					System.out.println("CONTENT " + baseUrl + ": " + authFile);
 				} catch (FileTransactionException e) {
 					myLogger.debug("Can't access " + baseUrl
 							+ ".ssh/authorized_keys: "
@@ -357,7 +355,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 				String tmp = FileManager.removeTrailingSlash(file.getUrl());
 				username = tmp.substring(tmp.lastIndexOf("/") + 1);
 				sshUsernameMap.put(url, username);
-				System.out.println("Username: " + username);
+				myLogger.debug("Username: " + username);
 			}
 			return username;
 		}
@@ -442,7 +440,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 			for (String site : sites) {
 				for ( Directory d : getDirectoriesForSite(site)) {
-					System.out.println("DIR: "+d.toString());
+					myLogger.debug("checking: "+d.toString());
 					SshBookmark b = null;
 					try {
 						b = getBookmark(d);
@@ -551,6 +549,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			if ( createSshConfig ) {
 				createSshConfig(page);
 			}
+			page.addMessage("\n\nSetup finished.\n\nIf you have any questions or experience issues, please don't hesiate to contact us:\n\neresearch-support@auckland.ac.nz");
 		} else if ( newPage instanceof SshConfigSetupPage ) {
 			wizard.setFinishEnabled(true);
 			wizard.setNextEnabled(true);
@@ -645,9 +644,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	@Override
 	public void propertyChange(PropertyChangeEvent arg0) {
 
-//		System.out.println("Event: " + arg0.getPropertyName());
-//		System.out.println("Value: " + arg0.getNewValue());
-		
+
 		if ( "idpsLoaded".equals(arg0.getPropertyName() )) {
 			if ( nextPressedAtLeastOnce ) {
 				return;
