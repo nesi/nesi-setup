@@ -221,12 +221,12 @@ public class SshKeyPanel extends JPanel implements ActionListener {
 					
 
 					final JFileChooser fc = new JFileChooser();
+		            fc.setFileHidingEnabled(false);
+		            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
 					int returnVal = fc.showOpenDialog(SshKeyPanel.this);
 			        if (returnVal == JFileChooser.APPROVE_OPTION) {
 			            File file = fc.getSelectedFile();
-			            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			            fc.setFileHidingEnabled(false);
 			            
 			            if ( ! file.exists() ) {
 							final ErrorInfo info = new ErrorInfo("SSH error",

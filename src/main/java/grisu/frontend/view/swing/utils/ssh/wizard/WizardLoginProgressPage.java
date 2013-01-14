@@ -63,13 +63,15 @@ public class WizardLoginProgressPage extends WizardPage implements LogRenderer {
 			public void run() {
 
 					getLoggingInStatus().setText("Logged in");
-					getProgressBar().setIndeterminate(false);
-					getProgressBar().setValue(100);
-
-				
-
+					setLoginProcessPercentage(100);
 			}
 		});
+		
+	}
+	
+	public void setLoginProcessPercentage(int percent) {
+		getProgressBar().setIndeterminate(false);
+		getProgressBar().setValue(percent);
 		
 	}
 	private JLabel getLblProgress() {

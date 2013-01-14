@@ -12,6 +12,7 @@ import grisu.model.UserEnvironmentManager;
 import grisu.model.dto.DtoMountPoints;
 import grisu.model.dto.GridFile;
 import grisu.model.info.dto.Directory;
+import grisu.model.info.dto.DtoStringList;
 import grisu.model.info.dto.Queue;
 import grith.jgrith.cred.AbstractCred.PROPERTY;
 import grith.jgrith.cred.Cred;
@@ -63,17 +64,22 @@ import com.kenai.jaffl.annotations.Direct;
 public class NesiSetupWizard extends JFrame implements WizardListener,
 		PropertyChangeListener {
 
-//	public static final ImmutableSet<String> SITES = ImmutableSet.of(
-//			"auckland", "canterbury");
-//	public static final ImmutableSet<String> HOSTS = ImmutableSet
-//			.of("pan.nesi.org.nz", "gram5p7.canterbury.ac.nz");
-	public static final ImmutableSet<String> SITES = ImmutableSet.of(
-			"auckland");
+	// public static final ImmutableSet<String> SITES = ImmutableSet.of(
+	// "auckland", "canterbury");
+	// public static final ImmutableSet<String> HOSTS = ImmutableSet
+	// .of("pan.nesi.org.nz", "gram5p7.canterbury.ac.nz");
+	public static final ImmutableSet<String> SITES = ImmutableSet
+			.of("auckland");
 	public static final ImmutableSet<String> HOSTS = ImmutableSet
 			.of("pan.nesi.org.nz");
-	
-	public static final ImmutableMap<String, String> BOOKMARK_NAMES = ImmutableMap.of("gsiftp://pan.nesi.org.nz/~/", "Pan", "gsiftp://gram5p7.canterbury.ac.nz/~/", "Power 7 (SUSE)"); 
-	public static final ImmutableMap<String, String> BOOKMARK_HOSTS = ImmutableMap.of("gsiftp://pan.nesi.org.nz/~/", "login.uoa.nesi.org.nz", "gsiftp://gram5p7.canterbury.ac.nz/~/", "beatrice.canterbury.ac.nz"); 
+
+	public static final ImmutableMap<String, String> BOOKMARK_NAMES = ImmutableMap
+			.of("gsiftp://pan.nesi.org.nz/~/", "Pan",
+					"gsiftp://gram5p7.canterbury.ac.nz/~/", "Power 7 (SUSE)");
+	public static final ImmutableMap<String, String> BOOKMARK_HOSTS = ImmutableMap
+			.of("gsiftp://pan.nesi.org.nz/~/", "login.uoa.nesi.org.nz",
+					"gsiftp://gram5p7.canterbury.ac.nz/~/",
+					"beatrice.canterbury.ac.nz");
 
 	public static final Logger myLogger = LoggerFactory
 			.getLogger(NesiSetupWizard.class);
@@ -81,7 +87,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	public static final String NO_FILE = "NO_FILE";
 
 	public static final String GRISU_BACKEND = "bestgrid";
-	
+
 	private boolean nextPressedAtLeastOnce = false;
 
 	/**
@@ -90,7 +96,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	public static void main(String[] args) {
 
 		LoginManager.initGrisuClient("nesi-setup");
-		
+
 		try {
 			myLogger.debug("Setting look and feel.");
 
@@ -151,12 +157,13 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	private final Map<String, String> sshUsernameMap = Maps.newConcurrentMap();
 
 	private List<MountPoint> mountpoints = null;
-	
+
 	private boolean createMobaConfig = false;
 	private boolean createSshConfig = false;
-	
+
 	private Set<SshBookmark> bookmarks = Sets.newTreeSet();
 
+	private boolean userRegistered = false;
 
 	/**
 	 * Create the frame.
@@ -387,17 +394,36 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			fm = GrisuRegistryManager.getDefault(si).getFileManager();
 			uem = GrisuRegistryManager.getDefault(si)
 					.getUserEnvironmentManager();
-			Thread t = new Thread() {
-				public void run() {
-					preload();
-				}
-			};
-			t.setName("getAllSshAuthFiles");
-			t.start();
-			infoPage.addMessage("Success!");
-			setServiceInterface(si);
-			infoPage.setLoginFinished();
-			wizard.setNextEnabled(true);
+
+			DtoStringList groups = si.getFqans();
+			if (groups == null || groups.getStringList().size() == 0) {
+				userRegistered = false;
+			} else {
+				userRegistered = true;
+			}
+
+			if (userRegistered) {
+
+				Thread t = new Thread() {
+					public void run() {
+						preload();
+					}
+				};
+				t.setName("getAllSshAuthFiles");
+				t.start();
+				infoPage.addMessage("Success!");
+				setServiceInterface(si);
+				infoPage.setLoginFinished();
+				wizard.setNextEnabled(true);
+			} else {
+				infoPage.setLoginProcessPercentage(0);
+				infoPage.addMessage("\nConnection successful.");
+				infoPage.addMessage("\nHowever, it looks like you are not a registered user yet.\nPlease visit:\n\thttp://bestgrid.org/join\n\nand register in order to access NeSI services.");
+				wizard.setNextEnabled(false);
+				wizard.setFinishEnabled(true);
+				wizard.setCancelEnabled(false);
+
+			}
 		} catch (Exception e) {
 			infoPage.setLoginError(e);
 		}
@@ -422,7 +448,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		// login
 		if (oldPage instanceof WizardLoginPage) {
 
-			if ( si == null ) {
+			if (si == null) {
 				wizard.setNextEnabled(false);
 			}
 			WizardLoginPage page = (WizardLoginPage) oldPage;
@@ -439,16 +465,17 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			final SshConfigSetupPage page = (SshConfigSetupPage) oldPage;
 
 			for (String site : sites) {
-				for ( Directory d : getDirectoriesForSite(site)) {
-					myLogger.debug("checking: "+d.toString());
+				for (Directory d : getDirectoriesForSite(site)) {
+					myLogger.debug("checking: " + d.toString());
 					SshBookmark b = null;
 					try {
 						b = getBookmark(d);
 					} catch (Exception e) {
-						myLogger.error("Could not get bookmark: "+d.toString());
+						myLogger.error("Could not get bookmark: "
+								+ d.toString());
 						continue;
 					}
-					if ( b != null ) {
+					if (b != null) {
 						bookmarks.add(getBookmark(d));
 					}
 				}
@@ -456,23 +483,23 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 			createMobaConfig = page.createMobaXTermConfig();
 			createSshConfig = page.createSshConfig();
-			
+
 		}
 
 	}
-	
+
 	public SshBookmark getBookmark(Directory d) {
-		
+
 		SshBookmark b = new SshBookmark();
 		b.setUsername(getUsernameForUrl(d.toUrl()));
 		String host = BOOKMARK_HOSTS.get(d.toUrl());
 		String name = BOOKMARK_NAMES.get(d.toUrl());
-		if ( StringUtils.isBlank(host)) {
-			myLogger.debug("Can't find host for: "+d.toUrl());
+		if (StringUtils.isBlank(host)) {
+			myLogger.debug("Can't find host for: " + d.toUrl());
 			return null;
 		}
-		if ( StringUtils.isBlank(name)) {
-			myLogger.debug("Can't find name for: "+d.toUrl());
+		if (StringUtils.isBlank(name)) {
+			myLogger.debug("Can't find name for: " + d.toUrl());
 			return null;
 		}
 		b.setHost(host);
@@ -480,16 +507,14 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		return b;
 	}
 
-	
 	@Override
 	public void onPageChanged(final WizardPage newPage, List<WizardPage> path) {
-		
+
 		wizard.setFinishEnabled(false);
 		wizard.setCancelEnabled(true);
-		
 
 		if (newPage instanceof WizardLoginProgressPage) {
-			
+
 			if (si != null) {
 				return;
 			}
@@ -499,7 +524,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 				public void run() {
 
 					login((WizardLoginProgressPage) newPage, credconfig);
-					
+
 					wizard.setPrevEnabled(true);
 				}
 			};
@@ -508,8 +533,8 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 		} else if (newPage instanceof WizardSSHCopyProgressPage) {
 
-			if ( newPage instanceof LogRenderer ) {
-				((LogRenderer)newPage).clearProgressLog();
+			if (newPage instanceof LogRenderer) {
+				((LogRenderer) newPage).clearProgressLog();
 			}
 
 			final WizardSSHCopyProgressPage page = (WizardSSHCopyProgressPage) newPage;
@@ -527,30 +552,30 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 						e.printStackTrace();
 					} finally {
 						wizard.setPrevEnabled(true);
-//						wizard.setFinishEnabled(true);
+						// wizard.setFinishEnabled(true);
 					}
 				}
 			};
 			t.setName("SshCopyThread");
 			t.start();
 		} else if (newPage instanceof FinishPage) {
-			if ( newPage instanceof LogRenderer ) {
-				((LogRenderer)newPage).clearProgressLog();
+			if (newPage instanceof LogRenderer) {
+				((LogRenderer) newPage).clearProgressLog();
 			}
 
 			wizard.setFinishEnabled(true);
 			wizard.setNextEnabled(false);
 			wizard.setCancelEnabled(false);
 
-			FinishPage page = (FinishPage)newPage;
-			if ( createMobaConfig ) {
+			FinishPage page = (FinishPage) newPage;
+			if (createMobaConfig) {
 				createMobaXTermConfig(page);
 			}
-			if ( createSshConfig ) {
+			if (createSshConfig) {
 				createSshConfig(page);
 			}
 			page.addMessage("\n\nSetup finished.\n\nIf you have any questions or experience issues, please don't hesiate to contact us:\n\neresearch-support@auckland.ac.nz");
-		} else if ( newPage instanceof SshConfigSetupPage ) {
+		} else if (newPage instanceof SshConfigSetupPage) {
 			wizard.setFinishEnabled(true);
 			wizard.setNextEnabled(true);
 			wizard.setCancelEnabled(true);
@@ -564,41 +589,46 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			String msg = c.addEntries(sshkey.getKeyPath());
 			page.addMessage(msg);
 		} catch (IOException e) {
-			page.addMessage("Error reading writing ssh config file '"+c.getSshConfigPath()+"':\n\t"+e.getLocalizedMessage());
+			page.addMessage("Error reading writing ssh config file '"
+					+ c.getSshConfigPath() + "':\n\t" + e.getLocalizedMessage());
 		}
 	}
 
 	private void createMobaXTermConfig(LogRenderer page) {
 
+		MobaXtermIniCreator c = new MobaXtermIniCreator(bookmarks);
 
-			MobaXtermIniCreator c = new MobaXtermIniCreator(bookmarks);
-			
-			if ( new File(c.getMobaXtermPath()).exists() ) {
-				
-			    JOptionPane pane = new JOptionPane(
-			            "MobaXterm config file already exists at: "+c.getMobaXtermPath()+"\nOverwrite?");
-			        Object[] options = new String[] { "Overwrite", "Cancel" };
-			        pane.setOptions(options);
-			        Point loc = this.getLocation();
-			        JDialog dialog = pane.createDialog(new JFrame(), "Write config file");
-			        dialog.setLocation(new Point((int)loc.getX(), (int)loc.getY() + 250));
-			        dialog.setVisible(true);
-			        Object obj = pane.getValue(); 
-			        int result = -1;
-			        for (int k = 0; k < options.length; k++)
-			          if (options[k].equals(obj))
-			            result = k;
-			        if ( result == 0 ) {
-						c.create();
-						page.addMessage("Config file for MobaXterm created:\n\t"+c.getMobaXtermPath()+"\n");
-			        } else {
-			        	page.addMessage("Skipped creating config file for MobaXTerm.\n");
-			        }
-				
-			} else {
+		if (new File(c.getMobaXtermPath()).exists()) {
+
+			JOptionPane pane = new JOptionPane(
+					"MobaXterm config file already exists at: "
+							+ c.getMobaXtermPath() + "\nOverwrite?");
+			Object[] options = new String[] { "Overwrite", "Cancel" };
+			pane.setOptions(options);
+			Point loc = this.getLocation();
+			JDialog dialog = pane.createDialog(new JFrame(),
+					"Write config file");
+			dialog.setLocation(new Point((int) loc.getX(),
+					(int) loc.getY() + 250));
+			dialog.setVisible(true);
+			Object obj = pane.getValue();
+			int result = -1;
+			for (int k = 0; k < options.length; k++)
+				if (options[k].equals(obj))
+					result = k;
+			if (result == 0) {
 				c.create();
-				page.addMessage("Config file for MobaXterm created:\n\t"+c.getMobaXtermPath()+"\n");
+				page.addMessage("Config file for MobaXterm created:\n\t"
+						+ c.getMobaXtermPath() + "\n");
+			} else {
+				page.addMessage("Skipped creating config file for MobaXTerm.\n");
 			}
+
+		} else {
+			c.create();
+			page.addMessage("Config file for MobaXterm created:\n\t"
+					+ c.getMobaXtermPath() + "\n");
+		}
 
 	}
 
@@ -644,19 +674,17 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	@Override
 	public void propertyChange(PropertyChangeEvent arg0) {
 
-
-		if ( "idpsLoaded".equals(arg0.getPropertyName() )) {
-			if ( nextPressedAtLeastOnce ) {
+		if ("idpsLoaded".equals(arg0.getPropertyName())) {
+			if (nextPressedAtLeastOnce) {
 				return;
 			}
-			boolean loaded = (Boolean)arg0.getNewValue();
-			if ( loaded ) {
+			boolean loaded = (Boolean) arg0.getNewValue();
+			if (loaded) {
 				wizard.setNextEnabled(true);
 			} else {
 				wizard.setNextEnabled(false);
 			}
 		}
-		
 
 	}
 
