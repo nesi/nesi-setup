@@ -30,12 +30,16 @@ public class MobaXtermIniCreator {
 	}
 
 	public String getMobaXtermIniPath() {
-		return mobaXtermPath +File.separator+"MobaXterm.ini";
+		return getMobaXtermPath() +File.separator+"MobaXterm.ini";
 	}
 	
 	public String getMobaXtermPath() {
-		
+		if (StringUtils.isNotBlank(mobaXtermPath)) {
 		return mobaXtermPath;
+		} else {
+			String path = System.getenv("APPDATA")+File.separator+"NeSI"+File.separator+"MobaXTerm";
+			return path;
+		}
 	}
 	
 	public void create() {

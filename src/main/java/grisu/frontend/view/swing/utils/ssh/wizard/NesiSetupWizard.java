@@ -598,7 +598,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 		MobaXtermIniCreator c = new MobaXtermIniCreator(bookmarks);
 
-		if (new File(c.getMobaXtermPath()).exists()) {
+		if (new File(c.getMobaXtermIniPath()).exists()) {
 
 			JOptionPane pane = new JOptionPane(
 					"MobaXterm config file already exists at: "
