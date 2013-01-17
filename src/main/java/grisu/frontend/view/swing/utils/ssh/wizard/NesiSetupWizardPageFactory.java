@@ -67,7 +67,7 @@ public class NesiSetupWizardPageFactory implements PageFactory {
 		
 		String title = getTitleForIndex(index);
 		
-		if ( SSH_COPY_PROGRESS_NAME.equals(title) ) {
+		if ( SSH_COPY_PROGRESS_NAME.equals(title) || SSH_CONFIG_NAME.equals(title) ) {
 			if ( ! wizard.isEnableSshKeyAccess() || wizard.getSites().size() == 0 ) {
 				index = index+1;
 			}
@@ -75,8 +75,10 @@ public class NesiSetupWizardPageFactory implements PageFactory {
 				index = index+1;
 			}
 		}
+	
 		
-		return pages.get(getTitleForIndex(index));
+		String newTitle = getTitleForIndex(index);
+		return pages.get(newTitle);
 	}
 
 
