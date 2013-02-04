@@ -1,6 +1,7 @@
 package grisu.frontend.view.swing.utils.ssh.wizard;
 
 import grisu.jcommons.view.html.VelocityUtils;
+import grith.jgrith.utils.GridSshKey;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,9 +18,11 @@ public class MobaXtermIniCreator {
 
 	private final Set<SshBookmark> bookmarks;
 	private final String mobaXtermPath = System.getenv("MOBAXTERM_LOCATION");
+	private final GridSshKey sshkey;
 
-	public MobaXtermIniCreator(Set<SshBookmark> bookmarks) {
+	public MobaXtermIniCreator(Set<SshBookmark> bookmarks, GridSshKey sshkey) {
 
+		this.sshkey = sshkey;
 		this.bookmarks = bookmarks;
 		
 		try {
@@ -49,6 +52,16 @@ public class MobaXtermIniCreator {
     	properties.put("bookmarks", bookmarks);
     	String username = System.getProperty("user.name");
     	properties.put("username", username);
+    	String homedir = System.getProperty("user.home");
+    	properties.put("homedir", homedir);
+    	if ( sshkey != null ) {
+    		String path = sshkey.getKeyPath();
+    		path = path.replace("\\", "/");
+    		path = "-i \""+ path + "\"";
+    		properties.put("sshkeypath", path);
+    	} else {
+    		properties.put("sshkeypath", "");
+    	}
     	
     	String iniContent = VelocityUtils.render("moba.ini", properties);
     	

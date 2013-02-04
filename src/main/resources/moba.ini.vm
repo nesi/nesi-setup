@@ -61,7 +61,7 @@ X11MultiMonitors=0
 X11AccessControl=0
 X11Engine=0
 X11Keyboard=0
-HomeDir=%CurrentDrive%:\Users\\$username
+HomeDir=$homedir
 [Font]
 Font2=MobaFont
 FontIsBold2=0
@@ -99,5 +99,5 @@ VisibleTabClose=1
 SubRep=
 ImgNum=41
 #foreach ($bookmark in $bookmarks)
-$bookmark.getName()= ; logout#109#0%$bookmark.getHost()%22%$bookmark.getUsername()%-i .ssh/grid_rsa%-1%-1%%%22%%0#MobaFont%10%0%0%0%0%236,236,236%0,0,0%180,180,192%0%-1%0%#0
+$bookmark.getName()= ; logout#109#0%$bookmark.getHost()%22%$bookmark.getUsername()%${sshkeypath}%-1%-1%%%22%%0#MobaFont%10%0%0%0%0%236,236,236%0,0,0%180,180,192%0%-1%0%#0
 #end

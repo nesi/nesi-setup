@@ -88,8 +88,6 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 	public static final String GRISU_BACKEND = "bestgrid";
 
-	private boolean nextPressedAtLeastOnce = false;
-
 	/**
 	 * Launch the application.
 	 */
@@ -135,6 +133,8 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		});
 	}
 
+	private boolean nextPressedAtLeastOnce = false;
+
 	private JPanel contentPane;
 
 	private final WizardContainer wizard;
@@ -148,19 +148,19 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	private GridSshKey sshkey;
 	private boolean forceCreateNewKey = false;
 	private boolean enableSshKeyAccess = false;
-
+	
 	private Set<String> sites;
 
 	private Map<PROPERTY, Object> credconfig;
-	private final Map<String, File> sshAuthFilesMap = Maps.newConcurrentMap();
 
+	private final Map<String, File> sshAuthFilesMap = Maps.newConcurrentMap();
 	private final Map<String, String> sshUsernameMap = Maps.newConcurrentMap();
 
 	private List<MountPoint> mountpoints = null;
 
 	private boolean createMobaConfig = false;
-	private boolean createSshConfig = false;
 
+	private boolean createSshConfig = false;
 	private Set<SshBookmark> bookmarks = Sets.newTreeSet();
 
 	private boolean userRegistered = false;
@@ -259,6 +259,59 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 	}
 
+	private void createMobaXTermConfig(LogRenderer page) {
+
+		GridSshKey temp = null;
+		if ( enableSshKeyAccess ) {
+			temp = sshkey;
+		}
+		MobaXtermIniCreator c = new MobaXtermIniCreator(bookmarks, temp);
+
+		if (new File(c.getMobaXtermIniPath()).exists()) {
+
+			JOptionPane pane = new JOptionPane(
+					"MobaXterm config file already exists at: "
+							+ c.getMobaXtermPath() + "\nOverwrite?");
+			Object[] options = new String[] { "Overwrite", "Cancel" };
+			pane.setOptions(options);
+			Point loc = this.getLocation();
+			JDialog dialog = pane.createDialog(new JFrame(),
+					"Write config file");
+			dialog.setLocation(new Point((int) loc.getX(),
+					(int) loc.getY() + 250));
+			dialog.setVisible(true);
+			Object obj = pane.getValue();
+			int result = -1;
+			for (int k = 0; k < options.length; k++)
+				if (options[k].equals(obj))
+					result = k;
+			if (result == 0) {
+				c.create();
+				page.addMessage("Config file for MobaXterm created:\n\t"
+						+ c.getMobaXtermPath() + "\n");
+			} else {
+				page.addMessage("Skipped creating config file for MobaXTerm.\n");
+			}
+
+		} else {
+			c.create();
+			page.addMessage("Config file for MobaXterm created:\n\t"
+					+ c.getMobaXtermPath() + "\n");
+		}
+
+	}
+
+	private void createSshConfig(LogRenderer page) {
+		SshConfigCreator c = new SshConfigCreator(bookmarks);
+		try {
+			String msg = c.addEntries(sshkey.getKeyPath());
+			page.addMessage(msg);
+		} catch (IOException e) {
+			page.addMessage("Error reading writing ssh config file '"
+					+ c.getSshConfigPath() + "':\n\t" + e.getLocalizedMessage());
+		}
+	}
+
 	private void ensureKeyIsPresent(String baseUrl, LogRenderer r) {
 
 		r.addMessage("FileSystem: " + baseUrl);
@@ -293,6 +346,26 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 	}
 
+	public SshBookmark getBookmark(Directory d) {
+
+		SshBookmark b = new SshBookmark();
+		b.setUsername(getUsernameForUrl(d.toUrl()));
+		String host = BOOKMARK_HOSTS.get(d.toUrl());
+		String name = BOOKMARK_NAMES.get(d.toUrl());
+		if (StringUtils.isBlank(host)) {
+			myLogger.debug("Can't find host for: " + d.toUrl());
+			return null;
+		}
+		if (StringUtils.isBlank(name)) {
+			myLogger.debug("Can't find name for: " + d.toUrl());
+			return null;
+		}
+		b.setHost(host);
+		b.setName(name);
+		
+		return b;
+	}
+
 	private Set<Directory> getDirectoriesForSite(String site) {
 		Set<Directory> dirs = Sets.newHashSet();
 
@@ -320,6 +393,10 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		return mountpoints;
 	}
 
+	public Set<String> getSites() {
+		return sites;
+	}
+
 	private File getSshAuthorizedKeysForDirectory(String baseUrl) {
 
 		synchronized (baseUrl.intern()) {
@@ -341,6 +418,10 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			return authFile;
 		}
 
+	}
+
+	public GridSshKey getSshKey() {
+		return sshkey;
 	}
 
 	private String getUsernameForUrl(String url) {
@@ -366,6 +447,10 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			}
 			return username;
 		}
+	}
+
+	public boolean isEnableSshKeyAccess() {
+		return enableSshKeyAccess;
 	}
 
 	private void login(WizardLoginProgressPage infoPage,
@@ -488,25 +573,6 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 	}
 
-	public SshBookmark getBookmark(Directory d) {
-
-		SshBookmark b = new SshBookmark();
-		b.setUsername(getUsernameForUrl(d.toUrl()));
-		String host = BOOKMARK_HOSTS.get(d.toUrl());
-		String name = BOOKMARK_NAMES.get(d.toUrl());
-		if (StringUtils.isBlank(host)) {
-			myLogger.debug("Can't find host for: " + d.toUrl());
-			return null;
-		}
-		if (StringUtils.isBlank(name)) {
-			myLogger.debug("Can't find name for: " + d.toUrl());
-			return null;
-		}
-		b.setHost(host);
-		b.setName(name);
-		return b;
-	}
-
 	@Override
 	public void onPageChanged(final WizardPage newPage, List<WizardPage> path) {
 
@@ -583,55 +649,6 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 	}
 
-	private void createSshConfig(LogRenderer page) {
-		SshConfigCreator c = new SshConfigCreator(bookmarks);
-		try {
-			String msg = c.addEntries(sshkey.getKeyPath());
-			page.addMessage(msg);
-		} catch (IOException e) {
-			page.addMessage("Error reading writing ssh config file '"
-					+ c.getSshConfigPath() + "':\n\t" + e.getLocalizedMessage());
-		}
-	}
-
-	private void createMobaXTermConfig(LogRenderer page) {
-
-		MobaXtermIniCreator c = new MobaXtermIniCreator(bookmarks);
-
-		if (new File(c.getMobaXtermIniPath()).exists()) {
-
-			JOptionPane pane = new JOptionPane(
-					"MobaXterm config file already exists at: "
-							+ c.getMobaXtermPath() + "\nOverwrite?");
-			Object[] options = new String[] { "Overwrite", "Cancel" };
-			pane.setOptions(options);
-			Point loc = this.getLocation();
-			JDialog dialog = pane.createDialog(new JFrame(),
-					"Write config file");
-			dialog.setLocation(new Point((int) loc.getX(),
-					(int) loc.getY() + 250));
-			dialog.setVisible(true);
-			Object obj = pane.getValue();
-			int result = -1;
-			for (int k = 0; k < options.length; k++)
-				if (options[k].equals(obj))
-					result = k;
-			if (result == 0) {
-				c.create();
-				page.addMessage("Config file for MobaXterm created:\n\t"
-						+ c.getMobaXtermPath() + "\n");
-			} else {
-				page.addMessage("Skipped creating config file for MobaXTerm.\n");
-			}
-
-		} else {
-			c.create();
-			page.addMessage("Config file for MobaXterm created:\n\t"
-					+ c.getMobaXtermPath() + "\n");
-		}
-
-	}
-
 	private void preload() {
 
 		for (String site : uem.getAllAvailableSites()) {
@@ -702,14 +719,6 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		t.setName("InitPages");
 		t.start();
 
-	}
-
-	public Set<String> getSites() {
-		return sites;
-	}
-
-	public boolean isEnableSshKeyAccess() {
-		return enableSshKeyAccess;
 	}
 
 }
