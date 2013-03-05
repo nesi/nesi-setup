@@ -61,7 +61,7 @@
 		</dependency>
 	</dependencies>
 	<properties>
-		<grisu.version>0.5.28</grisu.version>
+		<grisu.version>0.5.30</grisu.version>
 	</properties>
 
 	<build>
