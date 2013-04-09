@@ -4,7 +4,6 @@ import grisu.control.ServiceInterface;
 import grisu.control.exceptions.RemoteFileSystemException;
 import grisu.frontend.control.clientexceptions.FileTransactionException;
 import grisu.frontend.control.login.LoginManager;
-import grisu.jcommons.view.html.VelocityUtils;
 import grisu.model.FileManager;
 import grisu.model.GrisuRegistryManager;
 import grisu.model.MountPoint;
@@ -20,7 +19,6 @@ import grith.jgrith.cred.SLCSCred;
 import grith.jgrith.utils.GridSshKey;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
@@ -48,18 +46,15 @@ import org.ciscavate.cjwizard.WizardPage;
 import org.ciscavate.cjwizard.WizardSettings;
 import org.ciscavate.cjwizard.pagetemplates.DefaultPageTemplate;
 import org.ciscavate.cjwizard.pagetemplates.PageTemplate;
-import org.ciscavate.cjwizard.pagetemplates.TitledPageTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.jgoodies.common.base.SystemUtils;
 import com.jgoodies.looks.Options;
-import com.kenai.jaffl.annotations.Direct;
 
 public class NesiSetupWizard extends JFrame implements WizardListener,
 		PropertyChangeListener {

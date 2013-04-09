@@ -2,8 +2,6 @@ package grisu.frontend.view.swing.utils.ssh.wizard;
 
 import com.google.common.base.Objects;
 
-import grith.jgrith.utils.GridSshKey;
-
 public class SshBookmark implements Comparable<SshBookmark> {
 	
 	private String name;

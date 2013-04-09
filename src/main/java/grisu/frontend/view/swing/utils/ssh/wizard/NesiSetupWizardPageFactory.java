@@ -1,6 +1,5 @@
 package grisu.frontend.view.swing.utils.ssh.wizard;
 
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Map;
 

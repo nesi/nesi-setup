@@ -1,6 +1,5 @@
 package grisu.frontend.view.swing.utils.ssh.wizard;
 
-import grisu.jcommons.configuration.CommonGridProperties;
 import grith.jgrith.utils.GridSshKey;
 
 import java.awt.event.ItemEvent;
@@ -10,15 +9,12 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
 public class AdvancedSSHOptionsPanel extends JPanel {
@@ -34,14 +30,14 @@ public class AdvancedSSHOptionsPanel extends JPanel {
 	 */
 	public AdvancedSSHOptionsPanel() {
 		setLayout(new FormLayout(new ColumnSpec[] {
-				FormFactory.RELATED_GAP_COLSPEC,
+				FormSpecs.RELATED_GAP_COLSPEC,
 				ColumnSpec.decode("33px:grow"),},
 			new RowSpec[] {
-				FormFactory.RELATED_GAP_ROWSPEC,
+				FormSpecs.RELATED_GAP_ROWSPEC,
 				RowSpec.decode("22px"),
-				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.DEFAULT_ROWSPEC,
-				FormFactory.RELATED_GAP_ROWSPEC,}));
+				FormSpecs.RELATED_GAP_ROWSPEC,
+				FormSpecs.DEFAULT_ROWSPEC,
+				FormSpecs.RELATED_GAP_ROWSPEC,}));
 		add(getChckbxAdvancedConnectionSettings(), "1, 2, 2, 1, left, center");
 		add(getSshKeyPanel(), "2, 4, fill, fill");
 

@@ -8,9 +8,6 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.python.antlr.PythonParser.continue_stmt_return;
-
-import com.ctc.wstx.util.StringUtil;
 
 public class SshConfigCreator {
 	

@@ -11,7 +11,6 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.ctc.wstx.util.StringUtil;
 import com.google.common.collect.Maps;
 
 public class MobaXtermIniCreator {
