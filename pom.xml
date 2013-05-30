@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>nz.org.nesi</groupId>
 		<artifactId>nesi</artifactId>
-		<version>0.23</version>
+		<version>1.0</version>
 	</parent>
 
 	<repositories>
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>grith</groupId>
 			<artifactId>jgrith</artifactId>
-			<version>0.14</version>
+			<version>${jgrith.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
@@ -61,7 +61,8 @@
 		</dependency>
 	</dependencies>
 	<properties>
-		<grisu.version>0.6.2-SNAPSHOT</grisu.version>
+		<grisu.version>0.7</grisu.version>
+        <jgrith.version>1.0</jgrith.version>
 	</properties>
 
 	<build>
@@ -392,7 +393,7 @@
 
 
 		</profile>	
-	
+
 	</profiles>
 
 	<scm>
