@@ -27,7 +27,7 @@
 
 
 	<artifactId>nesi-setup</artifactId>
-	<version>0.12-SNAPSHOT</version>
+	<version>0.12</version>
 	<dependencies>
 		<dependency>
 			<groupId>grisu.frontend</groupId>
@@ -400,6 +400,6 @@
 		<url>https://github.com/nesi/nesi-setup</url>
 		<connection>scm:git:git://github.com/nesi/nesi-setup.git</connection>
 		<developerConnection>scm:git:git@github.com:nesi/nesi-setup.git</developerConnection>
-	  <tag>HEAD</tag>
+	  <tag>0.12</tag>
   </scm>
 </project>
