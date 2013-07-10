@@ -61,8 +61,8 @@
 		</dependency>
 	</dependencies>
 	<properties>
-		<grisu.version>0.7</grisu.version>
-        <jgrith.version>1.0</jgrith.version>
+		<grisu.version>0.7.1</grisu.version>
+        <jgrith.version>1.0.1</jgrith.version>
 	</properties>
 
 	<build>
@@ -95,7 +95,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- you can disable the assembly plugin if you want, your builds will 
+			<!-- you can disable the assembly plugin if you want, your builds will
 				be faster I find it quite handy to have maven build an executable jar, though -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -143,9 +143,9 @@
 		</plugins>
 
 	</build>
-	
+
 	<profiles>
-	
+
 		<profile>
 			<id>deb</id>
 			<!-- <activation> -->
@@ -225,7 +225,7 @@
 										</replacement>
 									</replacements>
 								</configuration>
-							</execution>							
+							</execution>
 						</executions>
 					</plugin>
 
@@ -382,9 +382,9 @@
 							<preinstallScriptlet>
 								<script>echo "Installing NeSI setup application..."</script>
 							</preinstallScriptlet>
-							<!-- <postinstallScriptlet> <scriptFile>src/main/scripts/postinstall</scriptFile> 
-								<fileEncoding>utf-8</fileEncoding> </postinstallScriptlet> <preremoveScriptlet> 
-								<scriptFile>src/main/scripts/preremove</scriptFile> <fileEncoding>utf-8</fileEncoding> 
+							<!-- <postinstallScriptlet> <scriptFile>src/main/scripts/postinstall</scriptFile>
+								<fileEncoding>utf-8</fileEncoding> </postinstallScriptlet> <preremoveScriptlet>
+								<scriptFile>src/main/scripts/preremove</scriptFile> <fileEncoding>utf-8</fileEncoding>
 								</preremoveScriptlet> -->
 						</configuration>
 					</plugin>
@@ -392,8 +392,8 @@
 			</build>
 
 
-		</profile>	
-	
+		</profile>
+
 	</profiles>
 
 	<scm>

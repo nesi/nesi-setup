@@ -1,5 +1,11 @@
 package grisu.frontend.view.swing.utils.ssh.wizard;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.jgoodies.common.base.SystemUtils;
+import com.jgoodies.looks.Options;
 import grisu.control.ServiceInterface;
 import grisu.control.exceptions.RemoteFileSystemException;
 import grisu.frontend.control.clientexceptions.FileTransactionException;
@@ -17,27 +23,6 @@ import grith.jgrith.cred.AbstractCred.PROPERTY;
 import grith.jgrith.cred.Cred;
 import grith.jgrith.cred.SLCSCred;
 import grith.jgrith.utils.GridSshKey;
-
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Point;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ciscavate.cjwizard.WizardContainer;
@@ -49,12 +34,17 @@ import org.ciscavate.cjwizard.pagetemplates.PageTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.jgoodies.common.base.SystemUtils;
-import com.jgoodies.looks.Options;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class NesiSetupWizard extends JFrame implements WizardListener,
 		PropertyChangeListener {
@@ -66,13 +56,13 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	public static final ImmutableSet<String> SITES = ImmutableSet
 			.of("auckland");
 	public static final ImmutableSet<String> HOSTS = ImmutableSet
-			.of("pan.nesi.org.nz");
+			.of("gram.uoa.nesi.org.nz");
 
 	public static final ImmutableMap<String, String> BOOKMARK_NAMES = ImmutableMap
-			.of("gsiftp://pan.nesi.org.nz/~/", "Pan",
+			.of("gsiftp://gram.uoa.nesi.org.nz/~/", "Pan",
 					"gsiftp://gram5p7.canterbury.ac.nz/~/", "Power 7 (SUSE)");
 	public static final ImmutableMap<String, String> BOOKMARK_HOSTS = ImmutableMap
-			.of("gsiftp://pan.nesi.org.nz/~/", "login.uoa.nesi.org.nz",
+			.of("gsiftp://gram.uoa.nesi.org.nz/~/", "login.uoa.nesi.org.nz",
 					"gsiftp://gram5p7.canterbury.ac.nz/~/",
 					"beatrice.canterbury.ac.nz");
 
@@ -143,7 +133,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	private GridSshKey sshkey;
 	private boolean forceCreateNewKey = false;
 	private boolean enableSshKeyAccess = false;
-	
+
 	private Set<String> sites;
 
 	private Map<PROPERTY, Object> credconfig;
@@ -357,7 +347,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		}
 		b.setHost(host);
 		b.setName(name);
-		
+
 		return b;
 	}
 
