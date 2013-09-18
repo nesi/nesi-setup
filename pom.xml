@@ -27,7 +27,7 @@
 
 
 	<artifactId>nesi-setup</artifactId>
-	<version>0.12-SNAPSHOT</version>
+	<version>0.13-SNAPSHOT</version>
 	<dependencies>
 		<dependency>
 			<groupId>grisu.frontend</groupId>
