@@ -61,7 +61,7 @@
 		</dependency>
 	</dependencies>
 	<properties>
-		<grisu.version>0.7.7</grisu.version>
+		<grisu.version>0.7.8</grisu.version>
 	        <jgrith.version>1.0.3</jgrith.version>
 	</properties>
 
