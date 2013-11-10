@@ -16,9 +16,9 @@ import grisu.model.MountPoint;
 import grisu.model.UserEnvironmentManager;
 import grisu.model.dto.DtoMountPoints;
 import grisu.model.dto.GridFile;
+import grisu.model.info.ResourceInformation;
 import grisu.model.info.dto.Directory;
 import grisu.model.info.dto.DtoStringList;
-import grisu.model.info.dto.Queue;
 import grith.jgrith.cred.AbstractCred.PROPERTY;
 import grith.jgrith.cred.Cred;
 import grith.jgrith.cred.SLCSCred;
@@ -71,7 +71,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 	public static final String NO_FILE = "NO_FILE";
 
-	public static final String GRISU_BACKEND = "bestgrid";
+	public static final String GRISU_BACKEND = "dev";
 
 	/**
 	 * Launch the application.
@@ -129,7 +129,8 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	private ServiceInterface si = null;
 	private FileManager fm = null;
 
-	private UserEnvironmentManager uem = null;
+    private UserEnvironmentManager uem = null;
+    private ResourceInformation ri = null;
 	private GridSshKey sshkey;
 	private boolean forceCreateNewKey = false;
 	private boolean enableSshKeyAccess = false;
@@ -225,7 +226,9 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 		Set<String> urls = new HashSet<String>();
 		for (Directory d : dirs) {
-			urls.add(d.toUrl());
+            if ( d.getPath().equals("/~/")) {
+                urls.add(d.toUrl());
+            }
 		}
 
 		for (String url : urls) {
@@ -354,15 +357,12 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	private Set<Directory> getDirectoriesForSite(String site) {
 		Set<Directory> dirs = Sets.newHashSet();
 
-		for (Queue q : uem.getAllAvailableSubmissionLocations()) {
-			if (!site.equalsIgnoreCase((q.getGateway().getSite().getName()))) {
-				continue;
-			}
-
-			for (Directory d : q.getDirectories()) {
-				dirs.add(d);
-			}
-		}
+        for (Directory d : si.getAllDirectoriesForUser()) {
+            if (!site.equalsIgnoreCase(d.getFilesystem().getSite().getName())) {
+                continue;
+            }
+            dirs.add(d);
+        }
 
 		return dirs;
 	}
@@ -464,6 +464,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			fm = GrisuRegistryManager.getDefault(si).getFileManager();
 			uem = GrisuRegistryManager.getDefault(si)
 					.getUserEnvironmentManager();
+            ri = GrisuRegistryManager.getDefault(si).getResourceInformation();
 
 			DtoStringList groups = si.getFqans();
 			if (groups == null || groups.getStringList().size() == 0) {
