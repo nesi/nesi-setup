@@ -24,13 +24,10 @@
 		</repository>
 	</repositories>
 
-    <properties>
-        <grisu.version>0.8</grisu.version>
-        <jgrith.version>1.0.3</jgrith.version>
-    </properties>
+
 
 	<artifactId>nesi-setup</artifactId>
-	<version>0.14-SNAPSHOT</version>
+	<version>0.16-SNAPSHOT</version>
 	<dependencies>
 		<dependency>
 			<groupId>grisu.frontend</groupId>
@@ -63,6 +60,10 @@
 			<version>2.0</version>
 		</dependency>
 	</dependencies>
+	<properties>
+		<grisu.version>0.8</grisu.version>
+	        <jgrith.version>1.0.3</jgrith.version>
+	</properties>
 
 	<build>
 		<plugins>
