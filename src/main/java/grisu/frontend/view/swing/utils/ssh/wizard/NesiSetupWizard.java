@@ -222,14 +222,23 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 	private void copyToSite(String site, LogRenderer r) {
 
-		Set<Directory> dirs = getDirectoriesForSite(site);
+//        Set<Directory> dirs = getDirectoriesForSite(site);
+//
+//        for (Directory d : dirs) {
+//            if ( d.getPath().equals("/~/")) {
+//                urls.add(d.toUrl());
+//            }
+//        }
 
-		Set<String> urls = new HashSet<String>();
-		for (Directory d : dirs) {
-            if ( d.getPath().equals("/~/")) {
-                urls.add(d.toUrl());
+        Set<String> urls = new HashSet<String>();
+        for ( MountPoint mp : getMountPoints() ) {
+            //TODO make that generic
+            if ( mp.getRootUrl().contains("gram.uoa.nesi.org.nz/home/")  && !mp.getRootUrl().contains("grid-")) {
+                urls.add(mp.getRootUrl());
             }
-		}
+        }
+
+
 
 		for (String url : urls) {
 			boolean useUrl = false;
