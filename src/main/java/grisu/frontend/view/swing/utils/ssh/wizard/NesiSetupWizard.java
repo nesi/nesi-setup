@@ -71,7 +71,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 	public static final String NO_FILE = "NO_FILE";
 
-	public static final String GRISU_BACKEND = "dev";
+	public static final String GRISU_BACKEND = "default";
 
 	/**
 	 * Launch the application.
