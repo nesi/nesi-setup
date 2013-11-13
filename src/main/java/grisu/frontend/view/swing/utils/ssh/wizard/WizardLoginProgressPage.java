@@ -1,11 +1,5 @@
 package grisu.frontend.view.swing.utils.ssh.wizard;
 
-import grisu.jcommons.view.html.VelocityUtils;
-import grith.jgrith.cred.Cred;
-import grith.jgrith.utils.GridSshKey;
-
-import java.util.Map;
-
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
@@ -16,10 +10,9 @@ import javax.swing.SwingUtilities;
 
 import org.ciscavate.cjwizard.WizardPage;
 
-import com.google.common.collect.Maps;
-import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
 public class WizardLoginProgressPage extends WizardPage implements LogRenderer {
@@ -32,19 +25,19 @@ public class WizardLoginProgressPage extends WizardPage implements LogRenderer {
 	public WizardLoginProgressPage(String title, String description) {
 		super(title, description);
 		setLayout(new FormLayout(new ColumnSpec[] {
-				FormFactory.RELATED_GAP_COLSPEC,
-				FormFactory.DEFAULT_COLSPEC,
-				FormFactory.RELATED_GAP_COLSPEC,
+				FormSpecs.RELATED_GAP_COLSPEC,
+				FormSpecs.DEFAULT_COLSPEC,
+				FormSpecs.RELATED_GAP_COLSPEC,
 				ColumnSpec.decode("default:grow"),
-				FormFactory.RELATED_GAP_COLSPEC,},
+				FormSpecs.RELATED_GAP_COLSPEC,},
 			new RowSpec[] {
-				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.DEFAULT_ROWSPEC,
-				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.DEFAULT_ROWSPEC,
-				FormFactory.RELATED_GAP_ROWSPEC,
+				FormSpecs.RELATED_GAP_ROWSPEC,
+				FormSpecs.DEFAULT_ROWSPEC,
+				FormSpecs.RELATED_GAP_ROWSPEC,
+				FormSpecs.DEFAULT_ROWSPEC,
+				FormSpecs.RELATED_GAP_ROWSPEC,
 				RowSpec.decode("max(72dlu;default):grow"),
-				FormFactory.RELATED_GAP_ROWSPEC,}));
+				FormSpecs.RELATED_GAP_ROWSPEC,}));
 		add(getLblProgress(), "2, 2, right, default");
 		add(getLoggingInStatus(), "4, 2, fill, default");
 		add(getProgressBar(), "4, 4, fill, default");
@@ -63,13 +56,15 @@ public class WizardLoginProgressPage extends WizardPage implements LogRenderer {
 			public void run() {
 
 					getLoggingInStatus().setText("Logged in");
-					getProgressBar().setIndeterminate(false);
-					getProgressBar().setValue(100);
-
-				
-
+					setLoginProcessPercentage(100);
 			}
 		});
+		
+	}
+	
+	public void setLoginProcessPercentage(int percent) {
+		getProgressBar().setIndeterminate(false);
+		getProgressBar().setValue(percent);
 		
 	}
 	private JLabel getLblProgress() {

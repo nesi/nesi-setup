@@ -3,6 +3,7 @@ package grisu.frontend.view.swing.utils.ssh.wizard;
 import grith.gridsession.view.SLCSCredPanel;
 import grith.jgrith.cred.AbstractCred.PROPERTY;
 
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
@@ -17,14 +18,10 @@ import org.jdesktop.swingx.error.ErrorInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
-import javax.swing.JButton;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 
 public class WizardLoginPage extends WizardPage  {
 	
@@ -41,15 +38,15 @@ public class WizardLoginPage extends WizardPage  {
 		
 		this.slcsPanelListener = l;
 		setLayout(new FormLayout(new ColumnSpec[] {
-				FormFactory.RELATED_GAP_COLSPEC,
+				FormSpecs.RELATED_GAP_COLSPEC,
 				ColumnSpec.decode("default:grow"),
-				FormFactory.RELATED_GAP_COLSPEC,},
+				FormSpecs.RELATED_GAP_COLSPEC,},
 			new RowSpec[] {
-				FormFactory.RELATED_GAP_ROWSPEC,
+				FormSpecs.RELATED_GAP_ROWSPEC,
 				RowSpec.decode("max(80dlu;default)"),
-				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.DEFAULT_ROWSPEC,
-				FormFactory.RELATED_GAP_ROWSPEC,}));
+				FormSpecs.RELATED_GAP_ROWSPEC,
+				FormSpecs.DEFAULT_ROWSPEC,
+				FormSpecs.RELATED_GAP_ROWSPEC,}));
 		add(getScrollPane(), "2, 2, fill, fill");
 		add(getCredPanel(), "2, 4, fill, fill");
 	}

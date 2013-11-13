@@ -1,5 +1,6 @@
 package grisu.frontend.view.swing.utils.ssh.wizard;
 
+import grisu.frontend.view.swing.utils.ssh.SshKeyPanel;
 import grisu.jcommons.view.html.VelocityUtils;
 import grith.jgrith.cred.Cred;
 
@@ -13,11 +14,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import com.google.common.collect.Maps;
-import com.jgoodies.forms.factories.FormFactory;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
-import grisu.frontend.view.swing.utils.ssh.SshKeyPanel;
 
 public class CredInfoPanel extends JPanel {
 	private JLabel lblDetails;
@@ -32,17 +32,17 @@ public class CredInfoPanel extends JPanel {
 	 */
 	public CredInfoPanel() {
 		setLayout(new FormLayout(new ColumnSpec[] {
-				FormFactory.RELATED_GAP_COLSPEC,
+				FormSpecs.RELATED_GAP_COLSPEC,
 				ColumnSpec.decode("default:grow"),
-				FormFactory.RELATED_GAP_COLSPEC,},
+				FormSpecs.RELATED_GAP_COLSPEC,},
 			new RowSpec[] {
-				FormFactory.RELATED_GAP_ROWSPEC,
-				FormFactory.DEFAULT_ROWSPEC,
-				FormFactory.RELATED_GAP_ROWSPEC,
+				FormSpecs.RELATED_GAP_ROWSPEC,
+				FormSpecs.DEFAULT_ROWSPEC,
+				FormSpecs.RELATED_GAP_ROWSPEC,
 				RowSpec.decode("default:grow"),
-				FormFactory.RELATED_GAP_ROWSPEC,
+				FormSpecs.RELATED_GAP_ROWSPEC,
 				RowSpec.decode("default:grow"),
-				FormFactory.RELATED_GAP_ROWSPEC,}));
+				FormSpecs.RELATED_GAP_ROWSPEC,}));
 		add(getLblDetails(), "2, 2");
 		add(getScrollPane(), "2, 4, fill, fill");
 		add(getSshKeyPanel(), "2, 6, fill, fill");

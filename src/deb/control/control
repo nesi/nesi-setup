@@ -1,0 +1,8 @@
+Package: nesi-setup
+Version: VERSION_TOKEN
+Section: misc
+Priority: optional
+Architecture: all
+Depends: java-runtime,nesi-meta
+Maintainer: Markus Binsteiner <m.binsteiner@auckland.ac.nz>
+Description: Helper application to get started with NeSI compute resources

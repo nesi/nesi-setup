@@ -1,0 +1,23 @@
+[Desktop Entry]
+Categories=
+Comment=This starts an instance of the NeSI setup wizard
+Comment[en]=This starts an instance of the NeSI setup wizard
+Encoding=UTF-8
+Exec=/usr/bin/nesi-setup 
+GenericName=
+GenericName[en]=
+Icon=/usr/local/lib/grisu/icons/nesi-setup.png
+MimeType=
+Name=NeSI setup
+Name[en]=NeSI setup
+Path=
+ServiceTypes=
+SwallowExec=
+SwallowTitle=
+Terminal=false
+TerminalOptions=
+Type=Application
+URL=
+X-KDE-SubstituteUID=false
+X-KDE-Username=root
+

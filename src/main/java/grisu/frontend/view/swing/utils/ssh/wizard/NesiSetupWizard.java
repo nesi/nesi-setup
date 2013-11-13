@@ -1,26 +1,42 @@
 package grisu.frontend.view.swing.utils.ssh.wizard;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.jgoodies.common.base.SystemUtils;
+import com.jgoodies.looks.Options;
 import grisu.control.ServiceInterface;
 import grisu.control.exceptions.RemoteFileSystemException;
 import grisu.frontend.control.clientexceptions.FileTransactionException;
 import grisu.frontend.control.login.LoginManager;
-import grisu.jcommons.view.html.VelocityUtils;
 import grisu.model.FileManager;
 import grisu.model.GrisuRegistryManager;
 import grisu.model.MountPoint;
 import grisu.model.UserEnvironmentManager;
 import grisu.model.dto.DtoMountPoints;
 import grisu.model.dto.GridFile;
+import grisu.model.info.ResourceInformation;
 import grisu.model.info.dto.Directory;
-import grisu.model.info.dto.Queue;
+import grisu.model.info.dto.DtoStringList;
 import grith.jgrith.cred.AbstractCred.PROPERTY;
 import grith.jgrith.cred.Cred;
 import grith.jgrith.cred.SLCSCred;
 import grith.jgrith.utils.GridSshKey;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.ciscavate.cjwizard.WizardContainer;
+import org.ciscavate.cjwizard.WizardListener;
+import org.ciscavate.cjwizard.WizardPage;
+import org.ciscavate.cjwizard.WizardSettings;
+import org.ciscavate.cjwizard.pagetemplates.DefaultPageTemplate;
+import org.ciscavate.cjwizard.pagetemplates.PageTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
-import java.awt.Point;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -30,54 +46,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.ciscavate.cjwizard.WizardContainer;
-import org.ciscavate.cjwizard.WizardListener;
-import org.ciscavate.cjwizard.WizardPage;
-import org.ciscavate.cjwizard.WizardSettings;
-import org.ciscavate.cjwizard.pagetemplates.DefaultPageTemplate;
-import org.ciscavate.cjwizard.pagetemplates.PageTemplate;
-import org.ciscavate.cjwizard.pagetemplates.TitledPageTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.kenai.jaffl.annotations.Direct;
-
 public class NesiSetupWizard extends JFrame implements WizardListener,
 		PropertyChangeListener {
 
-//	public static final ImmutableSet<String> SITES = ImmutableSet.of(
-//			"auckland", "canterbury");
-//	public static final ImmutableSet<String> HOSTS = ImmutableSet
-//			.of("pan.nesi.org.nz", "gram5p7.canterbury.ac.nz");
-	public static final ImmutableSet<String> SITES = ImmutableSet.of(
-			"auckland");
+	// public static final ImmutableSet<String> SITES = ImmutableSet.of(
+	// "auckland", "canterbury");
+	// public static final ImmutableSet<String> HOSTS = ImmutableSet
+	// .of("pan.nesi.org.nz", "gram5p7.canterbury.ac.nz");
+	public static final ImmutableSet<String> SITES = ImmutableSet
+			.of("auckland");
 	public static final ImmutableSet<String> HOSTS = ImmutableSet
-			.of("pan.nesi.org.nz");
-	
-	public static final ImmutableMap<String, String> BOOKMARK_NAMES = ImmutableMap.of("gsiftp://pan.nesi.org.nz/~/", "Pan", "gsiftp://gram5p7.canterbury.ac.nz/~/", "Power 7 (SUSE)"); 
-	public static final ImmutableMap<String, String> BOOKMARK_HOSTS = ImmutableMap.of("gsiftp://pan.nesi.org.nz/~/", "login.uoa.nesi.org.nz", "gsiftp://gram5p7.canterbury.ac.nz/~/", "beatrice.canterbury.ac.nz"); 
+			.of("gram.uoa.nesi.org.nz");
+
+	public static final ImmutableMap<String, String> BOOKMARK_NAMES = ImmutableMap
+			.of("gsiftp://gram.uoa.nesi.org.nz/~/", "Pan",
+					"gsiftp://gram5p7.canterbury.ac.nz/~/", "Power 7 (SUSE)");
+	public static final ImmutableMap<String, String> BOOKMARK_HOSTS = ImmutableMap
+			.of("gsiftp://gram.uoa.nesi.org.nz/~/", "login.uoa.nesi.org.nz",
+					"gsiftp://gram5p7.canterbury.ac.nz/~/",
+					"beatrice.canterbury.ac.nz");
 
 	public static final Logger myLogger = LoggerFactory
 			.getLogger(NesiSetupWizard.class);
 
 	public static final String NO_FILE = "NO_FILE";
 
-	public static final String GRISU_BACKEND = "bestgrid";
-	
-	private boolean nextPressedAtLeastOnce = false;
+	public static final String GRISU_BACKEND = "default";
 
 	/**
 	 * Launch the application.
@@ -85,6 +79,31 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	public static void main(String[] args) {
 
 		LoginManager.initGrisuClient("nesi-setup");
+
+		try {
+			myLogger.debug("Setting look and feel.");
+
+			UIManager.put(Options.USE_SYSTEM_FONTS_APP_KEY, Boolean.TRUE);
+			Options.setDefaultIconSize(new Dimension(18, 18));
+
+			String lafName = null;
+			if (SystemUtils.IS_OS_WINDOWS) {
+				lafName = Options.JGOODIES_WINDOWS_NAME;
+			} else {
+				lafName = UIManager.getSystemLookAndFeelClassName();
+			}
+
+			try {
+				myLogger.debug("Look and feel name:" + lafName);
+				UIManager.setLookAndFeel(lafName);
+			} catch (Exception e) {
+				System.err.println("Can't set look & feel:" + e);
+			}
+
+			// UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (final Exception e) {
+			myLogger.error(e.getLocalizedMessage(), e);
+		}
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -99,6 +118,8 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		});
 	}
 
+	private boolean nextPressedAtLeastOnce = false;
+
 	private JPanel contentPane;
 
 	private final WizardContainer wizard;
@@ -108,24 +129,27 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	private ServiceInterface si = null;
 	private FileManager fm = null;
 
-	private UserEnvironmentManager uem = null;
+    private UserEnvironmentManager uem = null;
+    private ResourceInformation ri = null;
 	private GridSshKey sshkey;
 	private boolean forceCreateNewKey = false;
+	private boolean enableSshKeyAccess = false;
 
 	private Set<String> sites;
 
 	private Map<PROPERTY, Object> credconfig;
-	private final Map<String, File> sshAuthFilesMap = Maps.newConcurrentMap();
 
+	private final Map<String, File> sshAuthFilesMap = Maps.newConcurrentMap();
 	private final Map<String, String> sshUsernameMap = Maps.newConcurrentMap();
 
 	private List<MountPoint> mountpoints = null;
-	
+
 	private boolean createMobaConfig = false;
+
 	private boolean createSshConfig = false;
-	
 	private Set<SshBookmark> bookmarks = Sets.newTreeSet();
 
+	private boolean userRegistered = false;
 
 	/**
 	 * Create the frame.
@@ -198,12 +222,23 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 	private void copyToSite(String site, LogRenderer r) {
 
-		Set<Directory> dirs = getDirectoriesForSite(site);
+//        Set<Directory> dirs = getDirectoriesForSite(site);
+//
+//        for (Directory d : dirs) {
+//            if ( d.getPath().equals("/~/")) {
+//                urls.add(d.toUrl());
+//            }
+//        }
 
-		Set<String> urls = new HashSet<String>();
-		for (Directory d : dirs) {
-			urls.add(d.toUrl());
-		}
+        Set<String> urls = new HashSet<String>();
+        for ( MountPoint mp : getMountPoints() ) {
+            //TODO make that generic
+            if ( mp.getRootUrl().contains("gram.uoa.nesi.org.nz/home/")  && !mp.getRootUrl().contains("grid-")) {
+                urls.add(mp.getRootUrl());
+            }
+        }
+
+
 
 		for (String url : urls) {
 			boolean useUrl = false;
@@ -219,6 +254,59 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 		}
 
+	}
+
+	private void createMobaXTermConfig(LogRenderer page) {
+
+		GridSshKey temp = null;
+		if ( enableSshKeyAccess ) {
+			temp = sshkey;
+		}
+		MobaXtermIniCreator c = new MobaXtermIniCreator(bookmarks, temp);
+
+		if (new File(c.getMobaXtermIniPath()).exists()) {
+
+			JOptionPane pane = new JOptionPane(
+					"MobaXterm config file already exists at: "
+							+ c.getMobaXtermPath() + "\nOverwrite?");
+			Object[] options = new String[] { "Overwrite", "Cancel" };
+			pane.setOptions(options);
+			Point loc = this.getLocation();
+			JDialog dialog = pane.createDialog(new JFrame(),
+					"Write config file");
+			dialog.setLocation(new Point((int) loc.getX(),
+					(int) loc.getY() + 250));
+			dialog.setVisible(true);
+			Object obj = pane.getValue();
+			int result = -1;
+			for (int k = 0; k < options.length; k++)
+				if (options[k].equals(obj))
+					result = k;
+			if (result == 0) {
+				c.create();
+				page.addMessage("Config file for MobaXterm created:\n\t"
+						+ c.getMobaXtermPath() + "\n");
+			} else {
+				page.addMessage("Skipped creating config file for MobaXTerm.\n");
+			}
+
+		} else {
+			c.create();
+			page.addMessage("Config file for MobaXterm created:\n\t"
+					+ c.getMobaXtermPath() + "\n");
+		}
+
+	}
+
+	private void createSshConfig(LogRenderer page) {
+		SshConfigCreator c = new SshConfigCreator(bookmarks);
+		try {
+			String msg = c.addEntries(sshkey.getKeyPath());
+			page.addMessage(msg);
+		} catch (IOException e) {
+			page.addMessage("Error reading writing ssh config file '"
+					+ c.getSshConfigPath() + "':\n\t" + e.getLocalizedMessage());
+		}
 	}
 
 	private void ensureKeyIsPresent(String baseUrl, LogRenderer r) {
@@ -255,18 +343,35 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 	}
 
+	public SshBookmark getBookmark(Directory d) {
+
+		SshBookmark b = new SshBookmark();
+		b.setUsername(getUsernameForUrl(d.toUrl()));
+		String host = BOOKMARK_HOSTS.get(d.toUrl());
+		String name = BOOKMARK_NAMES.get(d.toUrl());
+		if (StringUtils.isBlank(host)) {
+			myLogger.debug("Can't find host for: " + d.toUrl());
+			return null;
+		}
+		if (StringUtils.isBlank(name)) {
+			myLogger.debug("Can't find name for: " + d.toUrl());
+			return null;
+		}
+		b.setHost(host);
+		b.setName(name);
+
+		return b;
+	}
+
 	private Set<Directory> getDirectoriesForSite(String site) {
 		Set<Directory> dirs = Sets.newHashSet();
 
-		for (Queue q : uem.getAllAvailableSubmissionLocations()) {
-			if (!site.equalsIgnoreCase((q.getGateway().getSite().getName()))) {
-				continue;
-			}
-
-			for (Directory d : q.getDirectories()) {
-				dirs.add(d);
-			}
-		}
+        for (Directory d : si.getAllDirectoriesForUser()) {
+            if (!site.equalsIgnoreCase(d.getFilesystem().getSite().getName())) {
+                continue;
+            }
+            dirs.add(d);
+        }
 
 		return dirs;
 	}
@@ -282,6 +387,10 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		return mountpoints;
 	}
 
+	public Set<String> getSites() {
+		return sites;
+	}
+
 	private File getSshAuthorizedKeysForDirectory(String baseUrl) {
 
 		synchronized (baseUrl.intern()) {
@@ -289,11 +398,9 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			File authFile = sshAuthFilesMap.get(baseUrl);
 			if (authFile == null) {
 				try {
-					System.out.println("URL: " + baseUrl);
 					authFile = fm
 							.downloadFile(baseUrl + ".ssh/authorized_keys");
 					sshAuthFilesMap.put(baseUrl, authFile);
-					System.out.println("CONTENT " + baseUrl + ": " + authFile);
 				} catch (FileTransactionException e) {
 					myLogger.debug("Can't access " + baseUrl
 							+ ".ssh/authorized_keys: "
@@ -305,6 +412,10 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			return authFile;
 		}
 
+	}
+
+	public GridSshKey getSshKey() {
+		return sshkey;
 	}
 
 	private String getUsernameForUrl(String url) {
@@ -326,10 +437,14 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 				String tmp = FileManager.removeTrailingSlash(file.getUrl());
 				username = tmp.substring(tmp.lastIndexOf("/") + 1);
 				sshUsernameMap.put(url, username);
-				System.out.println("Username: " + username);
+				myLogger.debug("Username: " + username);
 			}
 			return username;
 		}
+	}
+
+	public boolean isEnableSshKeyAccess() {
+		return enableSshKeyAccess;
 	}
 
 	private void login(WizardLoginProgressPage infoPage,
@@ -358,17 +473,37 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			fm = GrisuRegistryManager.getDefault(si).getFileManager();
 			uem = GrisuRegistryManager.getDefault(si)
 					.getUserEnvironmentManager();
-			Thread t = new Thread() {
-				public void run() {
-					preload();
-				}
-			};
-			t.setName("getAllSshAuthFiles");
-			t.start();
-			infoPage.addMessage("Success!");
-			setServiceInterface(si);
-			infoPage.setLoginFinished();
-			wizard.setNextEnabled(true);
+            ri = GrisuRegistryManager.getDefault(si).getResourceInformation();
+
+			DtoStringList groups = si.getFqans();
+			if (groups == null || groups.getStringList().size() == 0) {
+				userRegistered = false;
+			} else {
+				userRegistered = true;
+			}
+
+			if (userRegistered) {
+
+				Thread t = new Thread() {
+					public void run() {
+						preload();
+					}
+				};
+				t.setName("getAllSshAuthFiles");
+				t.start();
+				infoPage.addMessage("Success!");
+				setServiceInterface(si);
+				infoPage.setLoginFinished();
+				wizard.setNextEnabled(true);
+			} else {
+				infoPage.setLoginProcessPercentage(0);
+				infoPage.addMessage("\nConnection successful.");
+				infoPage.addMessage("\nHowever, it looks like you are not a registered user yet.\nPlease visit:\n\thttp://bestgrid.org/join\n\nand register in order to access NeSI services.");
+				wizard.setNextEnabled(false);
+				wizard.setFinishEnabled(true);
+				wizard.setCancelEnabled(false);
+
+			}
 		} catch (Exception e) {
 			infoPage.setLoginError(e);
 		}
@@ -393,7 +528,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 		// login
 		if (oldPage instanceof WizardLoginPage) {
 
-			if ( si == null ) {
+			if (si == null) {
 				wizard.setNextEnabled(false);
 			}
 			WizardLoginPage page = (WizardLoginPage) oldPage;
@@ -405,20 +540,22 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 			sshkey = sshcopyPage.getGridSshKey();
 			sites = sshcopyPage.getSelectedSites();
 			forceCreateNewKey = sshcopyPage.isForceCreateNewKey();
+			enableSshKeyAccess = sshcopyPage.isEnableSshKeyAccess();
 		} else if (oldPage instanceof SshConfigSetupPage) {
 			final SshConfigSetupPage page = (SshConfigSetupPage) oldPage;
 
 			for (String site : sites) {
-				for ( Directory d : getDirectoriesForSite(site)) {
-					System.out.println("DIR: "+d.toString());
+				for (Directory d : getDirectoriesForSite(site)) {
+					myLogger.debug("checking: " + d.toString());
 					SshBookmark b = null;
 					try {
 						b = getBookmark(d);
 					} catch (Exception e) {
-						myLogger.error("Could not get bookmark: "+d.toString());
+						myLogger.error("Could not get bookmark: "
+								+ d.toString());
 						continue;
 					}
-					if ( b != null ) {
+					if (b != null) {
 						bookmarks.add(getBookmark(d));
 					}
 				}
@@ -426,40 +563,19 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 			createMobaConfig = page.createMobaXTermConfig();
 			createSshConfig = page.createSshConfig();
-			
+
 		}
 
 	}
-	
-	public SshBookmark getBookmark(Directory d) {
-		
-		SshBookmark b = new SshBookmark();
-		b.setUsername(getUsernameForUrl(d.toUrl()));
-		String host = BOOKMARK_HOSTS.get(d.toUrl());
-		String name = BOOKMARK_NAMES.get(d.toUrl());
-		if ( StringUtils.isBlank(host)) {
-			myLogger.debug("Can't find host for: "+d.toUrl());
-			return null;
-		}
-		if ( StringUtils.isBlank(name)) {
-			myLogger.debug("Can't find name for: "+d.toUrl());
-			return null;
-		}
-		b.setHost(host);
-		b.setName(name);
-		return b;
-	}
 
-	
 	@Override
 	public void onPageChanged(final WizardPage newPage, List<WizardPage> path) {
-		
+
 		wizard.setFinishEnabled(false);
 		wizard.setCancelEnabled(true);
-		
 
 		if (newPage instanceof WizardLoginProgressPage) {
-			
+
 			if (si != null) {
 				return;
 			}
@@ -469,7 +585,7 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 				public void run() {
 
 					login((WizardLoginProgressPage) newPage, credconfig);
-					
+
 					wizard.setPrevEnabled(true);
 				}
 			};
@@ -478,8 +594,8 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 
 		} else if (newPage instanceof WizardSSHCopyProgressPage) {
 
-			if ( newPage instanceof LogRenderer ) {
-				((LogRenderer)newPage).clearProgressLog();
+			if (newPage instanceof LogRenderer) {
+				((LogRenderer) newPage).clearProgressLog();
 			}
 
 			final WizardSSHCopyProgressPage page = (WizardSSHCopyProgressPage) newPage;
@@ -497,73 +613,34 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 						e.printStackTrace();
 					} finally {
 						wizard.setPrevEnabled(true);
-//						wizard.setFinishEnabled(true);
+						// wizard.setFinishEnabled(true);
 					}
 				}
 			};
 			t.setName("SshCopyThread");
 			t.start();
 		} else if (newPage instanceof FinishPage) {
-			if ( newPage instanceof LogRenderer ) {
-				((LogRenderer)newPage).clearProgressLog();
+			if (newPage instanceof LogRenderer) {
+				((LogRenderer) newPage).clearProgressLog();
 			}
 
 			wizard.setFinishEnabled(true);
 			wizard.setNextEnabled(false);
 			wizard.setCancelEnabled(false);
 
-			FinishPage page = (FinishPage)newPage;
-			if ( createMobaConfig ) {
+			FinishPage page = (FinishPage) newPage;
+			if (createMobaConfig) {
 				createMobaXTermConfig(page);
 			}
-			if ( createSshConfig ) {
+			if (createSshConfig) {
 				createSshConfig(page);
 			}
+			page.addMessage("\n\nSetup finished.\n\nIf you have any questions or experience issues, please don't hesiate to contact us:\n\neresearch-support@auckland.ac.nz");
+		} else if (newPage instanceof SshConfigSetupPage) {
+			wizard.setFinishEnabled(true);
+			wizard.setNextEnabled(true);
+			wizard.setCancelEnabled(true);
 		}
-
-	}
-
-	private void createSshConfig(LogRenderer page) {
-		SshConfigCreator c = new SshConfigCreator(bookmarks);
-		try {
-			String msg = c.addEntries(sshkey.getKeyPath());
-			page.addMessage(msg);
-		} catch (IOException e) {
-			page.addMessage("Error reading writing ssh config file '"+c.getSshConfigPath()+"':\n\t"+e.getLocalizedMessage());
-		}
-	}
-
-	private void createMobaXTermConfig(LogRenderer page) {
-
-
-			MobaXtermIniCreator c = new MobaXtermIniCreator(bookmarks);
-			
-			if ( new File(c.getMobaXtermPath()).exists() ) {
-				
-			    JOptionPane pane = new JOptionPane(
-			            "MobaXterm config file already exists at: "+c.getMobaXtermPath()+"\nOverwrite?");
-			        Object[] options = new String[] { "Overwrite", "Cancel" };
-			        pane.setOptions(options);
-			        Point loc = this.getLocation();
-			        JDialog dialog = pane.createDialog(new JFrame(), "Write config file");
-			        dialog.setLocation(new Point((int)loc.getX(), (int)loc.getY() + 250));
-			        dialog.setVisible(true);
-			        Object obj = pane.getValue(); 
-			        int result = -1;
-			        for (int k = 0; k < options.length; k++)
-			          if (options[k].equals(obj))
-			            result = k;
-			        if ( result == 0 ) {
-						c.create();
-						page.addMessage("Config file for MobaXterm created:\n\t"+c.getMobaXtermPath()+"\n");
-			        } else {
-			        	page.addMessage("Skipped creating config file for MobaXTerm.\n");
-			        }
-				
-			} else {
-				c.create();
-				page.addMessage("Config file for MobaXterm created:\n\t"+c.getMobaXtermPath()+"\n");
-			}
 
 	}
 
@@ -609,21 +686,17 @@ public class NesiSetupWizard extends JFrame implements WizardListener,
 	@Override
 	public void propertyChange(PropertyChangeEvent arg0) {
 
-		System.out.println("Event: " + arg0.getPropertyName());
-		System.out.println("Value: " + arg0.getNewValue());
-		
-		if ( "idpsLoaded".equals(arg0.getPropertyName() )) {
-			if ( nextPressedAtLeastOnce ) {
+		if ("idpsLoaded".equals(arg0.getPropertyName())) {
+			if (nextPressedAtLeastOnce) {
 				return;
 			}
-			boolean loaded = (Boolean)arg0.getNewValue();
-			if ( loaded ) {
+			boolean loaded = (Boolean) arg0.getNewValue();
+			if (loaded) {
 				wizard.setNextEnabled(true);
 			} else {
 				wizard.setNextEnabled(false);
 			}
 		}
-		
 
 	}
 
